@@ -1,0 +1,41 @@
+<app-auth-layout title="Welcome back" subtitle="Please enter your credentials to log in.">
+  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="flex flex-col gap-6">
+    <app-input
+      label="Email Address"
+      type="email"
+      placeholder="e.g. john@example.com"
+      icon="mail"
+      [control]="emailControl"
+    ></app-input>
+
+    <div class="flex flex-col gap-1">
+      <app-input
+        label="Password"
+        type="password"
+        placeholder="Enter your password"
+        icon="lock"
+        [control]="passwordControl"
+      ></app-input>
+      <div class="flex justify-end px-1">
+        <a routerLink="/auth/forgot-password" class="text-sm font-display font-semibold text-brand-primary hover:opacity-80 transition-all">
+          Forgot password?
+        </a>
+      </div>
+    </div>
+
+    <div class="pt-4">
+      <app-button type="submit" [loading]="isLoading()" [disabled]="loginForm.invalid">
+        Continue to Dashboard
+      </app-button>
+    </div>
+  </form>
+
+  <div class="mt-10 pt-8 border-t border-brand-surface flex flex-col items-center">
+    <p class="text-gray-500 font-medium mb-1 font-sans">
+      New to InvestingTracker?
+    </p>
+    <a routerLink="/auth/register" class="font-display font-bold text-brand-primary hover:underline underline-offset-4 decoration-2">
+      Create an account for free
+    </a>
+  </div>
+</app-auth-layout>

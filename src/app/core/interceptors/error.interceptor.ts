@@ -9,8 +9,8 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
       if ([401, 403].includes(error.status)) {
-        // Redirigir al login si no está autorizado
-        // El AuthStoreService se encargará de limpiar el estado
+        // Redirect to login if unauthorized
+        // The AuthStoreService will handle state cleanup
         router.navigate(['/auth/login']);
       }
       return throwError(() => error);

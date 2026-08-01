@@ -1,42 +1,42 @@
-# Arquitectura del Frontend: Investing Tracker
+# Frontend Architecture: Investing Tracker
 
-Este documento describe la estructura y las decisiones técnicas tomadas para el frontend de Investing Tracker.
+This document describes the structure and technical decisions made for the Investing Tracker frontend.
 
-## Principios de Diseño
-- **Clean Architecture**: Separación clara entre capas de infraestructura (HTTP), dominio (Estado) y presentación (UI).
-- **Angular Moderno**: Uso de Angular 21+, Signals para el estado, Standalone Components y Functional Interceptors.
-- **PWA-First**: Cacheo de assets, funcionamiento offline y persistencia local con IndexedDB.
-- **CSS-First**: Uso de Tailwind CSS 4 para el diseño responsivo y Angular Material para componentes UI complejos.
+## Design Principles
+- **Clean Architecture**: Clear separation between infrastructure (HTTP), domain (State), and presentation (UI) layers.
+- **Modern Angular**: Use of Angular 21+, Signals for state management, Standalone Components, and Functional Interceptors.
+- **PWA-First**: Asset caching, offline functionality, and local persistence with IndexedDB.
+- **CSS-First**: Use of Tailwind CSS 4 for responsive design and Angular Material for complex UI components.
 
-## Estructura de Carpetas
+## Folder Structure
 
 ### `src/app/core/`
-Singletons y lógica global de la aplicación.
-- **`services/`**: Servicios de comunicación y persistencia.
-  - `auth-http.service.ts`: Cliente HTTP para autenticación.
-  - `auth-store.service.ts`: Estado global (Signals).
-  - `indexed-db.service.ts`: Persistencia local.
-- **`interceptors/`**: Intercepción de peticiones HTTP.
-- **`guards/`**: Protección de rutas.
-- **`models/`**: Definición de interfaces TypeScript.
+Singletons and global application logic.
+- **`services/`**: Communication and persistence services.
+  - `auth-http.service.ts`: HTTP client for authentication.
+  - `auth-store.service.ts`: Global state (Signals).
+  - `indexed-db.service.ts`: Local persistence.
+- **`interceptors/`**: HTTP request interception.
+- **`guards/`**: Route protection.
+- **`models/`**: TypeScript interface definitions.
 
 ### `src/app/shared/`
-Componentes e infraestructura visual reutilizable entre múltiples funcionalidades.
-- **`components/`**: Inputs, Botones, etc. (Documentados con Storybook).
-- **`layouts/`**: Estructuras de página (ej. Auth Layout).
+Reusable components and visual infrastructure across multiple features.
+- **`components/`**: Inputs, Buttons, etc. (Documented with Storybook).
+- **`layouts/`**: Page structures (e.g., Auth Layout).
 
 ### `src/app/features/`
-Módulos de funcionalidades específicas de negocio.
-- **`auth/`**: [Ver documentación de Auth](../src/app/features/auth/docs/README.md)
-  - Login, Registro y Verificación OTP.
+Specific business functionality modules.
+- **`auth/`**: [See Auth documentation](../src/app/features/auth/docs/README.md)
+  - Login, Registration, and OTP Verification.
 
-## Tecnologías Utilizadas
-- **Angular 21**: Framework base.
-- **Tailwind CSS 4**: Diseño visual.
-- **Angular Material**: Componentes de formulario y utilidades.
-- **Storybook**: Documentación y desarrollo aislado de componentes.
-- **IndexedDB**: Persistencia local robusta.
-- **The Noun Project**: Iconografía profesional.
+## Technologies Used
+- **Angular 21**: Base framework.
+- **Tailwind CSS 4**: Visual design.
+- **Angular Material**: Form components and utilities.
+- **Storybook**: Documentation and isolated component development.
+- **IndexedDB**: Robust local persistence.
+- **The Noun Project**: Professional iconography.
 
 ---
-Para más detalles sobre una funcionalidad específica, navega al directorio `docs/` dentro de su carpeta en `features/`.
+For more details on a specific feature, navigate to the `docs/` directory within its folder in `features/`.

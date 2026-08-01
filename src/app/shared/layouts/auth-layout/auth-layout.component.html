@@ -1,0 +1,64 @@
+<div class="flex min-h-screen bg-brand-bg overflow-hidden font-sans">
+  <!-- Left Side: Visual / Branding (Hidden on mobile) -->
+  <div class="hidden md:flex relative w-1/2 lg:w-[55%] bg-brand-primary p-12 flex-col justify-between overflow-hidden">
+    <!-- Abstract background with brand colors -->
+    <div class="absolute inset-0 z-0 opacity-40">
+      <div class="absolute -top-[10%] -left-[10%] w-[70%] h-[70%] bg-brand-secondary rounded-full blur-[140px] opacity-30"></div>
+      <div class="absolute -bottom-[10%] -right-[10%] w-[60%] h-[60%] bg-status-accent rounded-full blur-[120px] opacity-20"></div>
+    </div>
+    
+    <!-- Branding Top -->
+    <div class="relative z-10 flex items-center gap-3">
+      <div class="flex items-center justify-center w-12 h-12 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 shadow-soft">
+        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+        </svg>
+      </div>
+      <span class="text-2xl font-display font-bold tracking-tight text-white">InvestingTracker</span>
+    </div>
+
+    <!-- Hero Text -->
+    <div class="relative z-10 my-auto px-6">
+      <h1 class="text-5xl lg:text-6xl font-display font-extrabold text-white leading-tight tracking-tighter mb-8 drop-shadow-sm">
+        Intelligent wealth management for modern investors.
+      </h1>
+      <p class="text-xl lg:text-2xl text-white/80 font-sans leading-relaxed max-w-xl">
+        Track your portfolio, analyze market trends, and make data-driven decisions with our advanced financial tools.
+      </p>
+    </div>
+
+    <!-- Footer Left -->
+    <div class="relative z-10">
+      <p class="text-sm text-white/50 font-medium font-sans">&copy; 2026 InvestingTracker. All rights reserved.</p>
+    </div>
+  </div>
+
+  <!-- Right Side: Form Area -->
+  <div class="flex flex-col justify-center w-full md:w-1/2 lg:w-[45%] bg-brand-bg p-6 sm:p-12 lg:p-16">
+    <div class="w-full max-w-[460px] mx-auto bg-white p-10 rounded-edufin shadow-soft border border-brand-surface">
+      <!-- Mobile logo (only visible on small screens) -->
+      <div class="flex md:hidden items-center gap-3 mb-10">
+        <div class="flex items-center justify-center w-10 h-10 bg-brand-primary rounded-xl shadow-soft">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+          </svg>
+        </div>
+        <span class="text-xl font-display font-bold tracking-tight text-status-dark">InvestingTracker</span>
+      </div>
+
+      <header class="mb-10 text-center md:text-left">
+        <h2 class="text-4xl font-display font-extrabold text-status-dark tracking-tight mb-3">{{ title() }}</h2>
+        <p class="text-gray-500 text-lg font-sans leading-relaxed">{{ subtitle() }}</p>
+      </header>
+
+      <main>
+        <ng-content></ng-content>
+      </main>
+      
+      <!-- Footer Mobile -->
+      <footer class="mt-12 text-center md:hidden">
+         <p class="text-sm text-gray-400 font-medium font-sans">&copy; 2026 InvestingTracker</p>
+      </footer>
+    </div>
+  </div>
+</div>

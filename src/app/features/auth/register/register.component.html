@@ -1,0 +1,34 @@
+<app-auth-layout title="Create your account" subtitle="Join InvestingTracker today">
+  <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-4">
+    <app-input
+      label="Email"
+      type="email"
+      placeholder="name@example.com"
+      icon="email"
+      
+      [control]="emailControl"
+    ></app-input>
+
+    <app-input
+      label="Password"
+      type="password"
+      placeholder="Minimum 8 characters"
+      icon="lock"
+      
+      [control]="passwordControl"
+    ></app-input>
+
+    <app-button type="submit" [loading]="isLoading()" [disabled]="registerForm.invalid">
+      Get Started
+    </app-button>
+  </form>
+
+  <div class="mt-8 pt-6 border-t border-slate-100 text-center">
+    <p class="text-slate-500">
+      Already have an account?
+      <a routerLink="/auth/login" class="font-semibold text-primary hover:underline">
+        Sign In
+      </a>
+    </p>
+  </div>
+</app-auth-layout>

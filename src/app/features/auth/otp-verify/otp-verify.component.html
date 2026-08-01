@@ -1,0 +1,31 @@
+<app-auth-layout title="Verify your account" subtitle="Enter the 6-digit code we sent to your email">
+  <form [formGroup]="otpForm" (ngSubmit)="onSubmit()" class="space-y-6">
+    <app-input
+      label="Verification Code"
+      type="text"
+      placeholder="000000"
+      icon="vpn_key"
+      
+      [control]="codeControl"
+      maxlength="6"
+    ></app-input>
+
+    <div class="text-center">
+      <p class="text-sm text-slate-500">
+        Didn't receive the code?
+        <button
+          type="button"
+          (click)="resendCode()"
+          [disabled]="resendCooldown() > 0 || isResending()"
+          class="font-semibold text-primary hover:underline disabled:text-slate-300 disabled:no-underline"
+        >
+          Resend {{ resendCooldown() > 0 ? '(' + resendCooldown() + 's)' : '' }}
+        </button>
+      </p>
+    </div>
+
+    <app-button type="submit" [loading]="isLoading()" [disabled]="otpForm.invalid">
+      Verify and Continue
+    </app-button>
+  </form>
+</app-auth-layout>

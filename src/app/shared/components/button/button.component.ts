@@ -1,40 +1,29 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-button',
-  standalone: true,
-  imports: [CommonModule, MatButtonModule, MatProgressSpinnerModule],
-  template: `
-    <button
-      mat-flat-button
-      [color]="color"
-      [disabled]="disabled || loading"
-      [type]="type"
-      class="w-full relative py-6 text-lg font-medium transition-all"
-      (click)="onClick.emit($event)"
-    >
-      <span [class.opacity-0]="loading">
-        <ng-content></ng-content>
-      </span>
-      
-      <div *ngIf="loading" class="absolute inset-0 flex items-center justify-center">
-        <mat-spinner diameter="24"></mat-spinner>
-      </div>
-    </button>
-  `,
-  styles: [`
-    :host { display: block; width: 100%; }
-    button { border-radius: 12px !important; }
-  `]
+  imports: [CommonModule, MatProgressSpinnerModule],
+  templateUrl: './button.component.html',
+  styleUrl: './button.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ButtonComponent {
-  @Input() color: 'primary' | 'accent' | 'warn' | '' = 'primary';
-  @Input() type: 'button' | 'submit' = 'button';
-  @Input() disabled = false;
-  @Input() loading = false;
+  readonly type = input<'button' | 'submit'>('button');
+  readonly disabled = input(false);
+  readonly loading = input(false);
+  readonly variant = input<'primary' | 'secondary' | 'outline'>('primary');
   
-  @Output() onClick = new EventEmitter<Event>();
+  readonly onClick = output<Event>();
+
+  get buttonClasses() {
+    const base = 'px-6 py-3 rounded-full font-display font-semibold transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95';
+    const variants = {
+      primary: 'bg-brand-primary hover:opacity-90 text-white',
+      secondary: 'bg-brand-secondary hover:opacity-90 text-white',
+      outline: 'border-2 border-brand-primary text-brand-primary hover:bg-brand-primary/10 shadow-none'
+    };
+    return `${base} ${variants[this.variant()]}`;
+  }
 }

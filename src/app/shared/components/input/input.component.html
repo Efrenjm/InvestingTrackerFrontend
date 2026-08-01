@@ -1,0 +1,40 @@
+<div class="flex flex-col gap-1.5 w-full">
+  @if (label()) {
+    <label class="font-display text-sm font-semibold text-status-dark/70 ml-1">
+      {{ label() }}
+    </label>
+  }
+
+  <div
+    class="relative flex items-center transition-all duration-200"
+    [class.ring-2]="isFocused()"
+    [class.ring-brand-primary/20]="isFocused() && !errorMessage"
+    [class.ring-red-100]="errorMessage"
+  >
+    @if (icon()) {
+      <div class="absolute left-4 text-gray-400" [class.text-brand-primary]="isFocused() && !errorMessage">
+        <mat-icon>{{ icon() }}</mat-icon>
+      </div>
+    }
+
+    <input
+      [formControl]="control()"
+      [type]="type()"
+      [placeholder]="placeholder()"
+      (focus)="onFocus()"
+      (blur)="onBlur()"
+      class="w-full h-12 bg-brand-surface border-2 rounded-xl px-4 transition-all outline-none font-sans text-status-dark placeholder:text-gray-400"
+      [class.pl-12]="icon()"
+      [class.border-brand-surface]="!isFocused() && !errorMessage"
+      [class.border-brand-primary]="isFocused() && !errorMessage"
+      [class.border-red-400]="errorMessage"
+      [class.bg-white]="isFocused()"
+    />
+  </div>
+
+  @if (errorMessage) {
+    <span class="text-xs font-medium text-red-500 ml-1 mt-0.5 animate-in fade-in slide-in-from-top-1">
+      {{ errorMessage }}
+    </span>
+  }
+</div>

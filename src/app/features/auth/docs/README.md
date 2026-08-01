@@ -1,28 +1,28 @@
 # Feature: Authentication
 
-Esta funcionalidad gestiona el acceso de los usuarios a la aplicación a través de un sistema de registro con verificación por código (OTP) y gestión de sesiones mediante cookies HttpOnly.
+This feature manages user access to the application through a registration system with code verification (OTP) and session management using HttpOnly cookies.
 
-## Flujos
+## Flows
 
-### 1. Registro y Verificación
-1. **Registro (`/auth/register`)**: El usuario proporciona sus datos básicos. El sistema responde con un `userId` y envía un código de 6 dígitos al correo.
-2. **Verificación (`/auth/verify-code`)**: El usuario ingresa el código. Si es válido, el servidor settea la cookie de sesión y autentica al usuario.
-3. **Reenvío de código**: Disponible después de 1 minuto de espera desde el último envío.
+### 1. Registration and Verification
+1. **Registration (`/auth/register`)**: The user provides basic information. The system responds with a `userId` and sends a 6-digit code to their email.
+2. **Verification (`/auth/verify-code`)**: The user enters the code. If valid, the server sets the session cookie and authenticates the user.
+3. **Code Resend**: Available after a 1-minute wait from the last send.
 
-### 2. Inicio de Sesión
-- Autenticación directa mediante email y contraseña en `/auth/login`.
+### 2. Sign In
+- Direct authentication using email and password at `/auth/login`.
 
-### 3. Persistencia y Sesión
-- La sesión se mantiene mediante un JWT en una **cookie HttpOnly** (no accesible por JS).
-- El frontend recupera la sesión al cargar llamando a `/user`.
-- Los metadatos básicos del usuario se guardan en **IndexedDB** para una carga inicial más rápida (UX optimista).
+### 3. Persistence and Session
+- The session is maintained via a JWT in an **HttpOnly cookie** (not accessible by JS).
+- The frontend retrieves the session upon loading by calling `/user`.
+- Basic user metadata is stored in **IndexedDB** for faster initial loading (optimistic UX).
 
-## Componentes Compartidos Utilizados
-- `AuthLayoutComponent`: Estructura visual de las pantallas.
-- `InputComponent`: Manejo estandarizado de campos de formulario.
-- `ButtonComponent`: Botones con estados de carga.
+## Reusable Components Used
+- `AuthLayoutComponent`: Visual structure of the screens.
+- `InputComponent`: Standardized form field handling.
+- `ButtonComponent`: Buttons with loading states.
 
-## Seguridad
-- **AuthInterceptor**: Añade `withCredentials: true` automáticamente a todas las peticiones a la API.
-- **ErrorInterceptor**: Detecta respuestas 401/403 y redirige al login.
-- **AuthGuard / GuestGuard**: Protegen las rutas internas y públicas respectivamente.
+## Security
+- **AuthInterceptor**: Automatically adds `withCredentials: true` to all API requests.
+- **ErrorInterceptor**: Detects 401/403 responses and redirects to login.
+- **AuthGuard / GuestGuard**: Protect internal and public routes respectively.

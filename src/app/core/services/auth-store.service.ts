@@ -24,14 +24,12 @@ export class AuthStoreService {
 
   private async initializeSession() {
     this._loading.set(true);
-    
-    // 1. Intentar recuperar metadatos de IndexedDB para una carga inicial rápida (optimista)
+
     const cachedUser = await this.db.getItem<User>('user_metadata', 'current_user');
     if (cachedUser) {
       this._user.set(cachedUser);
     }
 
-    // 2. Verificar con el servidor si la sesión sigue siendo válida (fuente de verdad)
     this.authHttp.getCurrentUser().pipe(
       tap(res => {
         if (res.user) {
@@ -49,9 +47,36 @@ export class AuthStoreService {
     ).subscribe();
   }
 
+  fetchUser() {
+    this._loading.set(true);
+    return this.authHttp.getCurrentUser().pipe(
+      tap(res => {
+        if (res.user) {
+          this.setAuthenticatedUser(res.user);
+        } else {
+          this.clearSession();
+        }
+        this._loading.set(false);
+      }),
+      catchError((err) => {
+        this.clearSession();
+        this._loading.set(false);
+        throw err;
+      })
+    );
+  }
+
   setAuthenticatedUser(user: User) {
     this._user.set(user);
     this.db.setItem('user_metadata', 'current_user', user);
+  }
+
+  updateUser(user: Partial<User>) {
+    const currentUser = this._user();
+    if (currentUser) {
+      const updatedUser = { ...currentUser, ...user };
+      this.setAuthenticatedUser(updatedUser);
+    }
   }
 
   async clearSession() {

@@ -10,7 +10,6 @@ export const authGuard: CanActivateFn = () => {
     return true;
   }
 
-  // Redirigir al login si no está autenticado
   router.navigate(['/auth/login']);
   return false;
 };
@@ -23,7 +22,6 @@ export const guestGuard: CanActivateFn = () => {
     return true;
   }
 
-  // Redirigir al dashboard si ya está autenticado
   router.navigate(['/dashboard']);
   return false;
 };

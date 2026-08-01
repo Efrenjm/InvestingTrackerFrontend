@@ -1,33 +1,33 @@
 # Investing Tracker: Frontend
 
-Bienvenido al frontend de **Investing Tracker**, una Progressive Web App (PWA) moderna para la gestión inteligente de tus inversiones.
+Welcome to the frontend of **Investing Tracker**, a modern Progressive Web App (PWA) for the intelligent management of your investments.
 
-## Características Principales
-- **Autenticación Segura**: Registro con verificación OTP (6 dígitos) y sesión persistente mediante cookies HttpOnly.
-- **Experiencia Offline**: Acceso inmediato a tus datos mediante Service Workers e IndexedDB.
-- **Diseño Moderno**: Interfaz minimalista construida con Tailwind CSS 4 y Angular Material.
-- **Arquitectura Escalable**: Código modular siguiendo el patrón de Clean Architecture y Angular 21+.
+## Main Features
+- **Secure Authentication**: Registration with OTP verification (6 digits) and persistent sessions using HttpOnly cookies.
+- **Offline Experience**: Immediate access to your data through Service Workers and IndexedDB.
+- **Modern Design**: Minimalist interface built with Tailwind CSS 4 and Angular Material.
+- **Scalable Architecture**: Modular code following the Clean Architecture pattern and Angular 21+.
 
-## Documentación
-Para entender cómo está construida la aplicación, consulta los siguientes documentos:
+## Documentation
+To understand how the application is built, consult the following documents:
 
-- **[Guía de Arquitectura](docs/ARCHITECTURE.md)**: Estructura general, tecnologías y decisiones de diseño.
-- **[Feature: Autenticación](src/app/features/auth/docs/README.md)**: Detalles sobre el flujo de registro y login.
+- **[Architecture Guide](docs/ARCHITECTURE.md)**: General structure, technologies, and design decisions.
+- **[Feature: Authentication](src/app/features/auth/docs/README.md)**: Details about the registration and login flow.
 
-## Comandos Útiles
+## Useful Commands
 
-### Desarrollo
+### Development
 ```bash
-# Iniciar servidor de desarrollo
+# Start development server
 npm start
 
-# Iniciar Storybook (documentación de componentes)
+# Start Storybook (component documentation)
 npm run storybook
 ```
 
-### Construcción y PWA
+### Build and PWA
 ```bash
-# Construir para producción
+# Build for production
 npm run build
 ```
 

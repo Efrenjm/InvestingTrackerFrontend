@@ -1,0 +1,16 @@
+:host {
+  display: inline-block;
+  width: auto;
+}
+
+button {
+  width: 100%;
+}
+
+::ng-deep .button-spinner circle {
+  stroke: white !important;
+}
+
+::ng-deep .button-spinner {
+  display: inline-block !important;
+}

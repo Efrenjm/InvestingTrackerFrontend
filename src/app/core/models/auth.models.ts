@@ -1,9 +1,13 @@
 export interface User {
   id: string;
+  username: string;
   email: string;
+  phoneNumber: string;
   firstName: string;
+  middleName: string;
   lastName: string;
   avatarUrl?: string;
+  roles?: string[];
 }
 
 export interface AuthResponse {
@@ -15,12 +19,10 @@ export interface AuthResponse {
 export interface RegisterRequest {
   email: string;
   password?: string;
-  firstName: string;
-  lastName: string;
 }
 
 export interface LoginRequest {
-  email: string;
+  username: string;
   password?: string;
 }
 

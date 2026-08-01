@@ -1,7 +1,7 @@
-import { Component, inject, signal, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { AuthLayoutComponent } from '../../../shared/layouts/auth-layout/auth-layout.component';
 import { InputComponent } from '../../../shared/components/input/input.component';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
@@ -11,49 +11,17 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-otp-verify',
-  standalone: true,
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    RouterLink,
     AuthLayoutComponent,
     InputComponent,
     ButtonComponent,
     MatSnackBarModule
   ],
-  template: `
-    <app-auth-layout title="Verifica tu cuenta" subtitle="Ingresa el código de 6 dígitos que enviamos a tu email">
-      <form [formGroup]="otpForm" (ngSubmit)="onSubmit()" class="space-y-6">
-        <app-input
-          label="Código de Verificación"
-          type="text"
-          placeholder="000000"
-          icon="vpn_key"
-          formControlName="code"
-          [control]="codeControl"
-          maxlength="6"
-        ></app-input>
-
-        <div class="text-center">
-          <p class="text-sm text-slate-500">
-            ¿No recibiste el código?
-            <button
-              type="button"
-              (click)="resendCode()"
-              [disabled]="resendCooldown() > 0 || isResending()"
-              class="font-semibold text-primary hover:underline disabled:text-slate-300 disabled:no-underline"
-            >
-              Reenviar {{ resendCooldown() > 0 ? '(' + resendCooldown() + 's)' : '' }}
-            </button>
-          </p>
-        </div>
-
-        <app-button type="submit" [loading]="isLoading()" [disabled]="otpForm.invalid">
-          Verificar y Continuar
-        </app-button>
-      </form>
-    </app-auth-layout>
-  `
+  templateUrl: './otp-verify.component.html',
+  styleUrl: './otp-verify.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OtpVerifyComponent implements OnInit, OnDestroy {
   private readonly fb = inject(FormBuilder);
@@ -78,7 +46,7 @@ export class OtpVerifyComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.userId = sessionStorage.getItem('pending_user_id');
     if (!this.userId) {
-      this.snackBar.open('Sesión de registro expirada. Por favor regístrate de nuevo.', 'Cerrar', { duration: 5000 });
+      this.snackBar.open('Registration session expired. Please register again.', 'Close', { duration: 5000 });
       this.router.navigate(['/auth/register']);
       return;
     }
@@ -114,7 +82,7 @@ export class OtpVerifyComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.isLoading.set(false);
-        this.snackBar.open(err.error?.message || 'Código incorrecto o expirado', 'Cerrar', { duration: 3000 });
+        this.snackBar.open(err.error?.message || 'Incorrect or expired code', 'Close', { duration: 3000 });
       }
     });
   }
@@ -126,12 +94,12 @@ export class OtpVerifyComponent implements OnInit, OnDestroy {
     this.authHttp.refreshCode(this.userId).subscribe({
       next: () => {
         this.isResending.set(false);
-        this.snackBar.open('Nuevo código enviado', 'Cerrar', { duration: 3000 });
+        this.snackBar.open('New code sent', 'Close', { duration: 3000 });
         this.startCooldown();
       },
       error: (err) => {
         this.isResending.set(false);
-        this.snackBar.open(err.error?.message || 'Error al reenviar código', 'Cerrar', { duration: 3000 });
+        this.snackBar.open(err.error?.message || 'Error resending code', 'Close', { duration: 3000 });
       }
     });
   }

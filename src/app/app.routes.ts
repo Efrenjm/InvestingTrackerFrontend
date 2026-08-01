@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
+import { DashboardLayoutComponent } from './shared/layouts/dashboard-layout/dashboard-layout.component';
 
 export const routes: Routes = [
   {
@@ -7,13 +8,27 @@ export const routes: Routes = [
     loadChildren: () => import('./features/auth/auth-routing').then(m => m.AUTH_ROUTES)
   },
   {
-    path: 'dashboard',
+    path: '',
+    component: DashboardLayoutComponent,
     canActivate: [authGuard],
-    loadComponent: () => import('./app').then(m => m.AppComponent) // Placeholder
+    children: [
+      {
+        path: 'dashboard',
+        loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent)
+      },
+      {
+        path: 'profile',
+        loadComponent: () => import('./features/profile/profile.component').then(m => m.ProfileComponent)
+      },
+      {
+        path: '',
+        redirectTo: 'dashboard',
+        pathMatch: 'full'
+      }
+    ]
   },
   {
-    path: '',
-    redirectTo: 'auth/login',
-    pathMatch: 'full'
+    path: '**',
+    redirectTo: 'dashboard'
   }
 ];
