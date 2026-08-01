@@ -46,6 +46,49 @@
         <span class="text-xl font-display font-bold tracking-tight text-status-dark">InvestingTracker</span>
       </div>
 
+      <!-- Step Indicator -->
+      @if (step() !== undefined) {
+        <div class="mb-8">
+          <div class="flex items-center justify-between mb-3">
+            @for (label of stepLabels(); track $index) {
+              <div class="flex flex-col items-center flex-1" [class.opacity-50]="$index + 1 > step()!">
+                <div
+                  class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-display font-bold transition-all duration-300"
+                  [class.bg-brand-primary]="$index + 1 <= step()!"
+                  [class.text-white]="$index + 1 <= step()!"
+                  [class.bg-brand-surface]="$index + 1 > step()!"
+                  [class.text-gray-400]="$index + 1 > step()!"
+                  [class.scale-110]="$index + 1 === step()!"
+                  [class.shadow-lg]="$index + 1 === step()!"
+                >
+                  @if ($index + 1 < step()!) {
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                    </svg>
+                  } @else {
+                    {{ $index + 1 }}
+                  }
+                </div>
+                <span
+                  class="text-xs font-display font-semibold mt-2 text-center transition-colors duration-300"
+                  [class.text-brand-primary]="$index + 1 <= step()!"
+                  [class.text-gray-400]="$index + 1 > step()!"
+                >
+                  {{ label }}
+                </span>
+              </div>
+              @if ($index < stepLabels().length - 1) {
+                <div
+                  class="flex-1 h-0.5 mx-2 mb-6 rounded-full transition-all duration-500"
+                  [class.bg-brand-primary]="$index + 1 < step()!"
+                  [class.bg-brand-surface]="$index + 1 >= step()!"
+                ></div>
+              }
+            }
+          </div>
+        </div>
+      }
+
       <header class="mb-10 text-center md:text-left">
         <h2 class="text-4xl font-display font-extrabold text-status-dark tracking-tight mb-3">{{ title() }}</h2>
         <p class="text-gray-500 text-lg font-sans leading-relaxed">{{ subtitle() }}</p>

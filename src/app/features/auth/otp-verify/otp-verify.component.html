@@ -1,31 +1,75 @@
-<app-auth-layout title="Verify your account" subtitle="Enter the 6-digit code we sent to your email">
-  <form [formGroup]="otpForm" (ngSubmit)="onSubmit()" class="space-y-6">
-    <app-input
-      label="Verification Code"
-      type="text"
-      placeholder="000000"
-      icon="vpn_key"
-      
-      [control]="codeControl"
-      maxlength="6"
-    ></app-input>
-
-    <div class="text-center">
-      <p class="text-sm text-slate-500">
-        Didn't receive the code?
-        <button
-          type="button"
-          (click)="resendCode()"
-          [disabled]="resendCooldown() > 0 || isResending()"
-          class="font-semibold text-primary hover:underline disabled:text-slate-300 disabled:no-underline"
-        >
-          Resend {{ resendCooldown() > 0 ? '(' + resendCooldown() + 's)' : '' }}
-        </button>
+<app-auth-layout
+  [title]="isSuccess() ? 'Account Verified!' : 'Verify your account'"
+  [subtitle]="isSuccess() ? 'Your account has been verified successfully' : 'Enter the code we sent to ' + maskedUsername()"
+  [step]="2"
+  [totalSteps]="2"
+  [stepLabels]="['Create Account', 'Verify Code']"
+>
+  @if (isSuccess()) {
+    <!-- Success State -->
+    <div class="success-container">
+      <div class="success-icon-wrapper">
+        <div class="success-icon">
+          <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+            <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
+            <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+          </svg>
+        </div>
+      </div>
+      <p class="text-sm text-gray-500 font-sans mt-6 animate-fade-in-delayed">
+        Redirecting to your dashboard...
       </p>
+      <div class="flex justify-center mt-4 animate-fade-in-delayed">
+        <mat-spinner diameter="24" class="opacity-50"></mat-spinner>
+      </div>
     </div>
+  } @else {
+    <!-- OTP Verification Form -->
+    <div class="space-y-8">
+      <app-otp-input
+        (codeComplete)="onCodeComplete($event)"
+        [hasError]="hasError()"
+        [disabled]="isLoading()"
+      />
 
-    <app-button type="submit" [loading]="isLoading()" [disabled]="otpForm.invalid">
-      Verify and Continue
-    </app-button>
-  </form>
+      <!-- Resend Section -->
+      <div class="text-center">
+        <p class="text-sm text-gray-500 font-sans">
+          Didn't receive the code?
+          <button
+            type="button"
+            (click)="resendCode()"
+            [disabled]="resendCooldown() > 0 || isResending()"
+            class="font-semibold text-brand-primary hover:underline disabled:text-gray-300 disabled:no-underline transition-colors duration-200"
+          >
+            @if (isResending()) {
+              Sending...
+            } @else if (resendCooldown() > 0) {
+              Resend in {{ resendCooldown() }}s
+            } @else {
+              Resend Code
+            }
+          </button>
+        </p>
+      </div>
+
+      <!-- Loading State -->
+      @if (isLoading()) {
+        <div class="flex flex-col items-center gap-3 py-2">
+          <mat-spinner diameter="28"></mat-spinner>
+          <p class="text-sm text-gray-400 font-sans">Verifying your code...</p>
+        </div>
+      }
+
+      <!-- Back to Register -->
+      <div class="text-center pt-2">
+        <p class="text-xs text-gray-400 font-sans">
+          Wrong email?
+          <a href="/auth/register" class="font-semibold text-brand-primary hover:underline">
+            Start over
+          </a>
+        </p>
+      </div>
+    </div>
+  }
 </app-auth-layout>

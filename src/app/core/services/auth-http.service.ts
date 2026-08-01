@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { AuthResponse, LoginRequest, RegisterRequest, VerifyCodeRequest, User } from '../models/auth.models';
+import { AuthResponse, LoginRequest, RegisterRequest, RegisterResponse, VerifyCodeRequest, VerifyCodeResponse, User } from '../models/auth.models';
 import { UpdatePasswordRequest } from '../models/user.models';
 
 @Injectable({
@@ -11,8 +11,8 @@ export class AuthHttpService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = 'http://localhost:8080/api';
 
-  register(data: RegisterRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.baseUrl}/auth/register`, {
+  register(data: RegisterRequest): Observable<RegisterResponse> {
+    return this.http.post<RegisterResponse>(`${this.baseUrl}/auth/register`, {
       username: data.email,
       password: data.password
     });
@@ -22,8 +22,8 @@ export class AuthHttpService {
     return this.http.post<AuthResponse>(`${this.baseUrl}/auth/login`, data);
   }
 
-  verifyCode(data: VerifyCodeRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.baseUrl}/auth/verify-code`, data);
+  verifyCode(data: VerifyCodeRequest): Observable<VerifyCodeResponse> {
+    return this.http.post<VerifyCodeResponse>(`${this.baseUrl}/auth/verify-code`, data);
   }
 
   refreshCode(userId: string): Observable<AuthResponse> {

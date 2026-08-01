@@ -48,14 +48,23 @@ export class LoginComponent {
     const { email, password } = this.loginForm.value;
 
     this.authHttp.login({ username: email!, password: password! }).subscribe({
-      next: () => {
-        this.authStore.fetchUser().subscribe({
-          next: () => this.router.navigate(['/dashboard']),
-          error: (err: any) => {
-            this.isLoading.set(false);
-            this.snackBar.open(err.error?.message || 'Error fetching user session', 'Close', { duration: 3000 });
-          }
-        });
+      next: (res) => {
+        if (res?.user) {
+          this.authStore.setAuthenticatedUser(res.user);
+          this.isLoading.set(false);
+          this.router.navigate(['/dashboard']);
+        } else {
+          this.authStore.fetchUser().subscribe({
+            next: () => {
+              this.isLoading.set(false);
+              this.router.navigate(['/dashboard']);
+            },
+            error: (err: any) => {
+              this.isLoading.set(false);
+              this.snackBar.open(err.error?.message || 'Error fetching user session', 'Close', { duration: 3000 });
+            }
+          });
+        }
       },
       error: (err) => {
         this.isLoading.set(false);

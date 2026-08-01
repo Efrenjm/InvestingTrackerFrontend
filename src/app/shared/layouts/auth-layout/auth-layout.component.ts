@@ -11,4 +11,7 @@ import { CommonModule } from '@angular/common';
 export class AuthLayoutComponent {
   readonly title = input('Welcome');
   readonly subtitle = input('Manage your investments with intelligence');
+  readonly step = input<number | undefined>(undefined);
+  readonly totalSteps = input(2);
+  readonly stepLabels = input<string[]>(['Create Account', 'Verify Code']);
 }

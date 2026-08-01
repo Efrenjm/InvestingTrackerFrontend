@@ -1,0 +1,23 @@
+<div class="otp-container" role="group" aria-label="Verification code input">
+  @for (digit of digits(); track $index) {
+    <input
+      #digitInput
+      type="text"
+      maxlength="1"
+      autocomplete="one-time-code"
+      inputmode="text"
+      [value]="digit"
+      [disabled]="disabled()"
+      (input)="onInput($index, $event)"
+      (keydown)="onKeyDown($index, $event)"
+      (paste)="onPaste($event)"
+      (focus)="onFocus($index)"
+      (blur)="onBlur()"
+      class="otp-digit"
+      [class.has-value]="digit !== ''"
+      [class.focused]="focusedIndex() === $index"
+      [class.error]="hasError()"
+      [attr.aria-label]="'Digit ' + ($index + 1)"
+    />
+  }
+</div>

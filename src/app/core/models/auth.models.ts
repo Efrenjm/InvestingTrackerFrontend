@@ -30,3 +30,13 @@ export interface VerifyCodeRequest {
   userId: string;
   code: string;
 }
+
+export interface RegisterResponse {
+  userId: string;
+  username: string;
+}
+
+export interface VerifyCodeResponse {
+  userId: string;
+  username: string;
+}
