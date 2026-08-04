@@ -1,98 +1,45 @@
-<app-auth-layout 
-  title="Create your account" 
-  subtitle="Join InvestingTracker today"
-  [step]="1"
-  [totalSteps]="2"
-  [stepLabels]="['Create Account', 'Verify Code']"
+<app-auth-layout
+  title="Create an account"
+  subtitle="Enter your email to get started with Investing Tracker"
 >
   <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-5">
+    <!-- Email Input -->
     <app-input
-      label="Email"
+      label="Email Address"
       type="email"
-      placeholder="name@example.com"
-      icon="email"
+      placeholder="you@example.com"
+      icon="mail"
       [control]="emailControl"
     ></app-input>
 
-    <!-- Password field with visibility toggle -->
-    <div class="relative">
-      <app-input
-        label="Password"
-        [type]="showPassword() ? 'text' : 'password'"
-        placeholder="Minimum 8 characters"
-        icon="lock"
-        [control]="passwordControl"
-      ></app-input>
-      <button
-        type="button"
-        (click)="togglePassword()"
-        class="absolute right-3 top-[34px] p-1.5 rounded-lg text-gray-400 hover:text-brand-primary hover:bg-brand-primary/5 transition-all duration-200"
-        tabindex="-1"
-        aria-label="Toggle password visibility"
-      >
-        <mat-icon class="text-[20px]">{{ showPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
-      </button>
-    </div>
-
-    <!-- Password Strength Meter -->
-    @if (passwordValue()) {
-      <div class="space-y-3 animate-fade-in">
-        <!-- Strength Bar -->
-        <div class="flex items-center gap-3">
-          <div class="flex-1 h-1.5 bg-brand-surface rounded-full overflow-hidden">
-            <div
-              class="h-full rounded-full transition-all duration-500 ease-out"
-              [class]="passwordStrength().color"
-              [style.width.%]="(passwordStrength().score / 6) * 100"
-            ></div>
-          </div>
-          <span 
-            class="text-xs font-display font-semibold min-w-[52px] text-right"
-            [class.text-red-400]="passwordStrength().score <= 2"
-            [class.text-amber-500]="passwordStrength().score > 2 && passwordStrength().score <= 4"
-            [class.text-emerald-500]="passwordStrength().score > 4"
-          >
-            {{ passwordStrength().label }}
-          </span>
-        </div>
-
-        <!-- Requirements Checklist -->
-        <div class="grid grid-cols-2 gap-x-4 gap-y-1.5">
-          @for (check of passwordChecks(); track check.label) {
-            <div class="flex items-center gap-1.5">
-              <mat-icon 
-                class="text-[14px] w-[14px] h-[14px] transition-colors duration-200"
-                [class.text-emerald-400]="check.met"
-                [class.text-gray-300]="!check.met"
-              >
-                {{ check.met ? 'check_circle' : 'radio_button_unchecked' }}
-              </mat-icon>
-              <span 
-                class="text-[11px] font-sans transition-colors duration-200"
-                [class.text-emerald-600]="check.met"
-                [class.text-gray-400]="!check.met"
-              >
-                {{ check.label }}
-              </span>
-            </div>
-          }
-        </div>
-      </div>
-    }
-
+    <!-- Submit Button -->
     <div class="pt-2">
-      <app-button type="submit" [loading]="isLoading()" [disabled]="registerForm.invalid">
-        Get Started
+      <app-button
+        type="submit"
+        variant="primary"
+        size="lg"
+        [disabled]="registerForm.invalid || isLoading()"
+        class="w-full"
+      >
+        @if (isLoading()) {
+          <mat-spinner diameter="20" class="inline-block"></mat-spinner>
+          <span>Sending verification code...</span>
+        } @else {
+          <span>Continue</span>
+          <mat-icon class="!w-5 !h-5 !text-[20px]">arrow_forward</mat-icon>
+        }
       </app-button>
     </div>
-  </form>
 
-  <div class="mt-8 pt-6 border-t border-slate-100 text-center">
-    <p class="text-slate-500">
+    <!-- Login Footer Link -->
+    <div class="text-center pt-3 border-t border-slate-700/50 text-xs text-slate-400">
       Already have an account?
-      <a routerLink="/auth/login" class="font-semibold text-brand-primary hover:underline">
-        Sign In
+      <a
+        routerLink="/auth/login"
+        class="text-indigo-400 font-semibold hover:text-indigo-300 transition-colors hover:underline ml-1"
+      >
+        Log In
       </a>
-    </p>
-  </div>
+    </div>
+  </form>
 </app-auth-layout>

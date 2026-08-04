@@ -80,13 +80,17 @@ export class OtpVerifyComponent implements OnInit, OnDestroy {
 
     this.authHttp.verifyCode({ userId, code }).subscribe({
       next: () => {
-        // Verification successful — attempt auto-login
-        this.autoLogin();
+        this.isLoading.set(false);
+        this.isSuccess.set(true);
+        this.snackBar.open('Account verified successfully! Please set your password.', 'Close', { duration: 3000 });
+
+        setTimeout(() => {
+          this.router.navigate(['/auth/password']);
+        }, 1200);
       },
       error: (err) => {
         this.isLoading.set(false);
         this.hasError.set(true);
-        // Reset OTP input after a brief delay so the error animation plays
         setTimeout(() => {
           this.otpInput?.reset();
           this.hasError.set(false);
@@ -98,50 +102,6 @@ export class OtpVerifyComponent implements OnInit, OnDestroy {
         );
       }
     });
-  }
-
-  private autoLogin() {
-    const username = this.registrationState.username();
-    const password = this.registrationState.getPasswordForAutoLogin();
-
-    if (!username || !password) {
-      // Password was lost (page refresh) — fallback to login page
-      this.isLoading.set(false);
-      this.registrationState.clear();
-      this.snackBar.open('Account verified successfully! Please log in.', 'Close', { duration: 5000 });
-      this.router.navigate(['/auth/login']);
-      return;
-    }
-
-    this.authHttp.login({ username, password }).subscribe({
-      next: () => {
-        this.authStore.fetchUser().subscribe({
-          next: () => {
-            this.isLoading.set(false);
-            this.isSuccess.set(true);
-            this.registrationState.clear();
-
-            // Show success animation for 2.5 seconds, then navigate
-            setTimeout(() => {
-              this.router.navigate(['/dashboard']);
-            }, 2500);
-          },
-          error: () => {
-            this.fallbackToLogin();
-          }
-        });
-      },
-      error: () => {
-        this.fallbackToLogin();
-      }
-    });
-  }
-
-  private fallbackToLogin() {
-    this.isLoading.set(false);
-    this.registrationState.clear();
-    this.snackBar.open('Account verified! Please log in to continue.', 'Close', { duration: 5000 });
-    this.router.navigate(['/auth/login']);
   }
 
   resendCode() {

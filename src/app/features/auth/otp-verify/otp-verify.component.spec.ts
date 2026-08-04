@@ -1,79 +1,141 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { OtpVerifyComponent } from './otp-verify.component';
-import { ReactiveFormsModule } from '@angular/forms';
-import { provideRouter } from '@angular/router';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { AuthHttpService } from '../../../core/services/auth-http.service';
 import { AuthStoreService } from '../../../core/services/auth-store.service';
-import { of } from 'rxjs';
+import { RegistrationStateService } from '../../../core/services/registration-state.service';
+import { Router, provideRouter } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { vi } from 'vitest';
+import { of, throwError } from 'rxjs';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { signal } from '@angular/core';
 
 describe('OtpVerifyComponent', () => {
   let component: OtpVerifyComponent;
   let fixture: ComponentFixture<OtpVerifyComponent>;
-  let authHttpMock: any;
-  let authStoreMock: any;
-  let snackBarMock: any;
+  let router: Router;
+  let navigateSpy: any;
+  let snackBarOpenSpy: any;
+  
+  let authHttpSpy: any;
+  let authStoreSpy: any;
+  
+  let mockHasActiveRegistration: boolean;
+  let mockUserId: string | null;
+  let mockUsername: string | null;
+  let mockPassword: string | null;
+  let registrationStateMock: any;
 
   beforeEach(async () => {
-    authHttpMock = {
-      verifyCode: vi.fn().mockReturnValue(of({ user: { id: '1', email: 'test@example.com' } })),
-      refreshCode: vi.fn().mockReturnValue(of({ success: true }))
+    authHttpSpy = {
+      verifyCode: vi.fn().mockReturnValue(of({ userId: 'user123', username: 'test@example.com' })),
+      login: vi.fn().mockReturnValue(of({ user: { id: 'user123', username: 'test@example.com' } })),
+      refreshCode: vi.fn().mockReturnValue(of({}))
     };
-    authStoreMock = {
-      setAuthenticatedUser: vi.fn()
-    };
-    snackBarMock = {
-      open: vi.fn()
+    authStoreSpy = {
+      fetchUser: vi.fn().mockReturnValue(of({ user: { id: 'user123', username: 'test@example.com' } }))
     };
 
-    // Set value in sessionStorage
-    sessionStorage.setItem('pending_user_id', 'test-user-id');
+    mockHasActiveRegistration = true;
+    mockUserId = 'user123';
+    mockUsername = 'test@example.com';
+    mockPassword = 'password123';
+    
+    registrationStateMock = {
+      hasActiveRegistration: () => mockHasActiveRegistration,
+      userId: () => mockUserId,
+      username: () => mockUsername,
+      maskedUsername: signal('t***@example.com'),
+      getPasswordForAutoLogin: () => mockPassword,
+      clear: vi.fn()
+    };
 
     await TestBed.configureTestingModule({
-      imports: [OtpVerifyComponent, ReactiveFormsModule],
+      imports: [OtpVerifyComponent, BrowserAnimationsModule],
       providers: [
-        provideRouter([{ path: 'dashboard', component: {} as any }, { path: 'auth/register', component: {} as any }, { path: 'auth/verify-code', component: {} as any }]),
-        provideAnimationsAsync(),
-        { provide: AuthHttpService, useValue: authHttpMock },
-        { provide: AuthStoreService, useValue: authStoreMock },
-        { provide: MatSnackBar, useValue: snackBarMock }
+        provideRouter([]),
+        { provide: AuthHttpService, useValue: authHttpSpy },
+        { provide: AuthStoreService, useValue: authStoreSpy },
+        { provide: RegistrationStateService, useValue: registrationStateMock }
       ]
     }).compileComponents();
+  });
 
+  function createComponent() {
     fixture = TestBed.createComponent(OtpVerifyComponent);
     component = fixture.componentInstance;
+    
+    const snackBar = fixture.debugElement.injector.get(MatSnackBar);
+    snackBarOpenSpy = vi.spyOn(snackBar, 'open').mockImplementation(() => ({} as any));
+
+    router = TestBed.inject(Router);
+    navigateSpy = vi.spyOn(router, 'navigate').mockImplementation(() => Promise.resolve(true));
     fixture.detectChanges();
+  }
+
+  it('should redirect to /auth/register if no active registration session on init', () => {
+    mockHasActiveRegistration = false;
+    createComponent();
+    
+    expect(snackBarOpenSpy).toHaveBeenCalledWith('Registration session expired. Please register again.', 'Close', { duration: 5000 });
+    expect(navigateSpy).toHaveBeenCalledWith(['/auth/register']);
   });
 
-  afterEach(() => {
-    sessionStorage.clear();
-  });
-
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-
-  it('should have an invalid form when empty', () => {
-    expect(component.otpForm.invalid).toBe(true);
-  });
-
-  it('should have a valid form when filled correctly', () => {
-    component.otpForm.setValue({
-      code: '123456'
+  describe('when active registration exists', () => {
+    it('should start countdown timer on init', () => {
+      vi.useFakeTimers();
+      mockHasActiveRegistration = true;
+      createComponent();
+      
+      expect(component.resendCooldown()).toBe(60);
+      
+      vi.advanceTimersByTime(1000);
+      expect(component.resendCooldown()).toBe(59);
+      
+      vi.advanceTimersByTime(59000);
+      expect(component.resendCooldown()).toBe(0);
+      
+      component.ngOnDestroy();
+      vi.useRealTimers();
     });
-    expect(component.otpForm.valid).toBe(true);
-  });
 
-  it('should call authHttp.verifyCode on submit', () => {
-    component.otpForm.setValue({
-      code: '123456'
+    it('should verify code successfully', () => {
+      vi.useFakeTimers();
+      mockHasActiveRegistration = true;
+      createComponent();
+
+      authHttpSpy.verifyCode.mockReturnValue(of({ userId: 'user123', username: 'test@example.com' }));
+      authHttpSpy.login.mockReturnValue(of({ user: { id: 'user123', username: 'test@example.com' } }));
+
+      component.onCodeComplete('123456');
+
+      expect(authHttpSpy.verifyCode).toHaveBeenCalledWith({ userId: 'user123', code: '123456' });
+      
+      vi.advanceTimersByTime(2500);
+      vi.useRealTimers();
     });
-    component.onSubmit();
-    expect(authHttpMock.verifyCode).toHaveBeenCalledWith({
-      userId: 'test-user-id',
-      code: '123456'
+
+    it('should show error if verification fails', () => {
+      vi.useFakeTimers();
+      mockHasActiveRegistration = true;
+      createComponent();
+
+      authHttpSpy.verifyCode.mockReturnValue(throwError(() => ({ error: { message: 'Invalid code' } })));
+      
+      component.otpInput = {
+        reset: vi.fn()
+      } as any;
+      
+      component.onCodeComplete('000000');
+      
+      expect(authHttpSpy.verifyCode).toHaveBeenCalled();
+      expect(component.hasError()).toBe(true);
+      expect(snackBarOpenSpy).toHaveBeenCalledWith('Invalid code', 'Close', { duration: 4000 });
+      
+      vi.advanceTimersByTime(600);
+      expect(component.otpInput.reset).toHaveBeenCalled();
+      expect(component.hasError()).toBe(false);
+      vi.useRealTimers();
     });
   });
 });

@@ -1,76 +1,101 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RegisterComponent } from './register.component';
 import { ReactiveFormsModule } from '@angular/forms';
-import { provideRouter } from '@angular/router';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { AuthHttpService } from '../../../core/services/auth-http.service';
-import { of } from 'rxjs';
+import { RegistrationStateService } from '../../../core/services/registration-state.service';
+import { Router, provideRouter } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { vi } from 'vitest';
+import { of, throwError } from 'rxjs';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('RegisterComponent', () => {
   let component: RegisterComponent;
   let fixture: ComponentFixture<RegisterComponent>;
-  let authHttpMock: any;
-  let snackBarMock: any;
+  let router: Router;
+  let navigateSpy: any;
+  let snackBarOpenSpy: any;
+  
+  let authHttpSpy: any;
+  let registrationStateSpy: any;
 
   beforeEach(async () => {
-    authHttpMock = {
-      register: vi.fn().mockReturnValue(of({ userId: '1' }))
+    authHttpSpy = {
+      register: vi.fn().mockReturnValue(of({ userId: '123', username: 'test@example.com' }))
     };
-    snackBarMock = {
-      open: vi.fn()
+    registrationStateSpy = {
+      setRegistrationData: vi.fn()
     };
-
-    // Mock sessionStorage
-    vi.spyOn(window.sessionStorage, 'setItem').mockImplementation(() => {});
 
     await TestBed.configureTestingModule({
-      imports: [RegisterComponent, ReactiveFormsModule],
+      imports: [RegisterComponent, ReactiveFormsModule, BrowserAnimationsModule],
       providers: [
-        provideRouter([{ path: 'dashboard', component: {} as any }, { path: 'auth/register', component: {} as any }, { path: 'auth/verify-code', component: {} as any }, ]),
-        provideAnimationsAsync(),
-        { provide: AuthHttpService, useValue: authHttpMock },
-        { provide: MatSnackBar, useValue: snackBarMock }
+        provideRouter([]),
+        { provide: AuthHttpService, useValue: authHttpSpy },
+        { provide: RegistrationStateService, useValue: registrationStateSpy }
       ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(RegisterComponent);
     component = fixture.componentInstance;
+    
+    const snackBar = fixture.debugElement.injector.get(MatSnackBar);
+    snackBarOpenSpy = vi.spyOn(snackBar, 'open').mockImplementation(() => ({} as any));
+    
+    router = TestBed.inject(Router);
+    navigateSpy = vi.spyOn(router, 'navigate').mockImplementation(() => Promise.resolve(true));
     fixture.detectChanges();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  it('should validate email field (required and valid format)', () => {
+    const emailControl = component.registerForm.get('email');
+    
+    expect(emailControl?.valid).toBe(false);
+    expect(emailControl?.hasError('required')).toBe(true);
+
+    emailControl?.setValue('invalidemail');
+    expect(emailControl?.valid).toBe(false);
+    expect(emailControl?.hasError('email')).toBe(true);
+
+    emailControl?.setValue('valid@example.com');
+    expect(emailControl?.valid).toBe(true);
   });
 
-  it('should have an invalid form when empty', () => {
-    expect(component.registerForm.invalid).toBe(true);
-  });
-
-  it('should have a valid form when filled correctly', () => {
-    component.registerForm.setValue({
-      firstName: 'John',
-      lastName: 'Doe',
-      email: 'test@example.com',
-      password: 'password123'
-    });
-    expect(component.registerForm.valid).toBe(true);
-  });
-
-  it('should call authHttp.register on submit', () => {
-    component.registerForm.setValue({
-      firstName: 'John',
-      lastName: 'Doe',
-      email: 'test@example.com',
-      password: 'password123'
-    });
+  it('should not submit if form is invalid', () => {
+    component.registerForm.get('email')?.setValue('');
+    
     component.onSubmit();
-    expect(authHttpMock.register).toHaveBeenCalledWith({
-      firstName: 'John',
-      lastName: 'Doe',
-      email: 'test@example.com',
-      password: 'password123'
-    });
+    
+    expect(authHttpSpy.register).not.toHaveBeenCalled();
+  });
+
+  it('should call AuthHttpService.register, store data, and navigate on success', () => {
+    const email = 'test@example.com';
+    
+    component.registerForm.get('email')?.setValue(email);
+    
+    const mockResponse = { userId: '123', username: email };
+    authHttpSpy.register.mockReturnValue(of(mockResponse));
+    
+    component.onSubmit();
+    
+    expect(authHttpSpy.register).toHaveBeenCalledWith({ email });
+    expect(registrationStateSpy.setRegistrationData).toHaveBeenCalledWith('123', email, '');
+    expect(navigateSpy).toHaveBeenCalledWith(['/auth/verify-code']);
+    expect(component.isLoading()).toBe(false);
+  });
+
+  it('should show snackbar on registration error', () => {
+    const email = 'test@example.com';
+    
+    component.registerForm.get('email')?.setValue(email);
+    
+    authHttpSpy.register.mockReturnValue(throwError(() => ({ error: { message: 'Registration failed' } })));
+    
+    component.onSubmit();
+    
+    expect(authHttpSpy.register).toHaveBeenCalledWith({ email });
+    expect(snackBarOpenSpy).toHaveBeenCalledWith('Registration failed', 'Close', { duration: 5000 });
+    expect(component.isLoading()).toBe(false);
   });
 });

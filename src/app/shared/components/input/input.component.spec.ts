@@ -28,6 +28,6 @@ describe('InputComponent', () => {
     control.markAsTouched();
     fixture.detectChanges();
     
-    expect(component.error()).toBe('This field is required');
+    expect(component.errorMessage).toBe('This field is required');
   });
 });

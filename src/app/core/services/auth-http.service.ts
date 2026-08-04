@@ -13,8 +13,7 @@ export class AuthHttpService {
 
   register(data: RegisterRequest): Observable<RegisterResponse> {
     return this.http.post<RegisterResponse>(`${this.baseUrl}/auth/register`, {
-      username: data.email,
-      password: data.password
+      username: data.email
     });
   }
 

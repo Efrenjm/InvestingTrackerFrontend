@@ -65,6 +65,20 @@ import { AvatarComponent } from '../avatar/avatar.component';
         </a>
 
         <a
+          routerLink="/wallets"
+          routerLinkActive="bg-primary-50 text-primary-700"
+          class="flex items-center gap-3 p-3 rounded-xl text-gray-600 hover:bg-gray-100 transition-all group"
+          [title]="isCollapsed() ? 'Billeteras' : ''"
+        >
+          <svg class="w-6 h-6 group-hover:text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+          </svg>
+          @if (!isCollapsed()) {
+            <span class="font-medium">Billeteras</span>
+          }
+        </a>
+
+        <a
           routerLink="/profile"
           routerLinkActive="bg-primary-50 text-primary-700"
           class="flex items-center gap-3 p-3 rounded-xl text-gray-600 hover:bg-gray-100 transition-all group"
