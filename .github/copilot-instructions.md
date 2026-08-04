@@ -1,55 +1,60 @@
+# Copilot Instructions — Frontend (Angular PWA)
 
-You are an expert in TypeScript, Angular, and scalable web application development. You write functional, maintainable, performant, and accessible code following Angular and TypeScript best practices.
+## Build, test, and lint commands
 
-## TypeScript Best Practices
+Run all commands from `frontend/`.
 
-- Use strict type checking
-- Prefer type inference when the type is obvious
-- Avoid the `any` type; use `unknown` when type is uncertain
+```bash
+# Start local dev server
+npm start
 
-## Angular Best Practices
+# Production build
+npm run build
 
-- Always use standalone components over NgModules
-- Must NOT set `standalone: true` inside Angular decorators. It's the default in Angular v20+.
-- Use signals for state management
-- Implement lazy loading for feature routes
-- Do NOT use the `@HostBinding` and `@HostListener` decorators. Put host bindings inside the `host` object of the `@Component` or `@Directive` decorator instead
-- Use `NgOptimizedImage` for all static images.
-  - `NgOptimizedImage` does not work for inline base64 images.
+# Watch build for development
+npm run watch
 
-## Accessibility Requirements
+# Unit tests
+npm test
 
-- It MUST pass all AXE checks.
-- It MUST follow all WCAG AA minimums, including focus management, color contrast, and ARIA attributes.
+# Unit tests once (no watch)
+npm test -- --watch=false
 
-### Components
+# Single test file
+npm test -- --watch=false --include src/app/features/auth/login/login.component.spec.ts
 
-- Keep components small and focused on a single responsibility
-- Use `input()` and `output()` functions instead of decorators
-- Use `computed()` for derived state
-- Set `changeDetection: ChangeDetectionStrategy.OnPush` in `@Component` decorator
-- Prefer inline templates for small components
-- Prefer Reactive forms instead of Template-driven ones
-- Do NOT use `ngClass`, use `class` bindings instead
-- Do NOT use `ngStyle`, use `style` bindings instead
-- When using external templates/styles, use paths relative to the component TS file.
+# Storybook (shared components)
+npm run storybook
 
-## State Management
+# Build static Storybook
+npm run build-storybook
+```
 
-- Use signals for local component state
-- Use `computed()` for derived state
-- Keep state transformations pure and predictable
-- Do NOT use `mutate` on signals, use `update` or `set` instead
+There is no dedicated lint script configured in `package.json`.
 
-## Templates
+## High-level architecture
 
-- Keep templates simple and avoid complex logic
-- Use native control flow (`@if`, `@for`, `@switch`) instead of `*ngIf`, `*ngFor`, `*ngSwitch`
-- Use the async pipe to handle observables
-- Do not assume globals like (`new Date()`) are available.
+- Frontend follows a **clean-ish layered structure**:
+  - `src/app/core`: singleton services (HTTP/store/IndexedDB), guards, interceptors, and global models.
+  - `src/app/shared`: reusable UI components and layouts.
+  - `src/app/features`: feature slices (auth, dashboard, profile, etc.).
+- Routing uses **lazy loading**:
+  - Feature route trees are loaded with `loadChildren`.
+  - Main authenticated area is wrapped in `DashboardLayoutComponent`.
+- State is built around **Angular Signals** in store-style services (for example, auth session state in `AuthStoreService`), with IndexedDB used for local metadata persistence.
+- PWA setup is enabled through Angular service worker registration in `app.config.ts`, with production service worker config in `angular.json`.
+- API auth contract is cookie-based:
+  - API calls target `/api` / backend base URL.
+  - `authInterceptor` sets `withCredentials: true`.
+  - `errorInterceptor` redirects on 401/403.
 
-## Services
+## Key conventions
 
-- Design services around a single responsibility
-- Use the `providedIn: 'root'` option for singleton services
-- Use the `inject()` function instead of constructor injection
+- Use **standalone components**, functional providers, and functional interceptors/guards.
+- Prefer **signals + computed** for app state over class-based RxJS state containers.
+- Use **native control flow** (`@if`, `@for`, `@switch`) instead of structural directive microsyntax.
+- Shared visual primitives should live under `shared/components` and be documented via Storybook stories.
+- Authentication UX assumes:
+  - registration → OTP verification flow,
+  - HttpOnly cookie session established by backend,
+  - `/user` call on app/session initialization to hydrate real auth state.
