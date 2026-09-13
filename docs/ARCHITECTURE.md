@@ -6,8 +6,8 @@ This document describes both the frontend's current structure and the target bou
 
 ## Technology baseline
 
-- Angular 22.0.0-next packages are in use, including Angular Material and the Angular service worker.
-- The remaining baseline is TypeScript 5.9, RxJS 7.8, Tailwind CSS 4.2, Storybook 10.2, and Vitest 4.0.
+- Angular 22.1.6 stable packages are in use, including Angular Material and the Angular service worker; CLI and build tooling use 22.1.8.
+- The remaining baseline is TypeScript 6.0.3, RxJS 7.8, Tailwind CSS 4.2, Storybook 10.6.0, and Vitest 4.1.
 - The production build configures an Angular service worker. This configuration alone does not establish complete or correct offline behavior.
 - Storybook is configured with documentation and accessibility addons. The OTP input is currently the only colocated shared-component story; `src/stories` still contains generated examples.
 
@@ -163,7 +163,7 @@ These observations describe measured gaps; they are not assigned as work by this
 - Feature-specific wallet and account services, stores, and models currently live in `core`.
 - Shared-component Storybook coverage is incomplete, and generated examples remain under `src/stories`.
 - Unit-test coverage is uneven.
-- No project-provided lint or end-to-end script exists in `package.json`.
+- ESLint and staged-file commit checks are available; existing lint debt remains. See [the development guide](DEVELOPMENT.md). No end-to-end script exists in `package.json`.
 - Styling has overlapping Tailwind, application custom-property, and Material theme values that require later design-system alignment.
 
 ## Related documentation

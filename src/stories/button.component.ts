@@ -1,18 +1,18 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 
 @Component({
   selector: 'storybook-button',
-  standalone: true,
   imports: [CommonModule],
   template: ` <button
-  type="button"
-  (click)="onClick.emit($event)"
-  [ngClass]="classes"
-  [ngStyle]="{ 'background-color': backgroundColor }"
->
-  {{ label }}
-</button>`,
+    type="button"
+    (click)="onClick.emit($event)"
+    [class]="classes"
+    [style.background-color]="backgroundColor"
+  >
+    {{ label }}
+  </button>`,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./button.css'],
 })
 export class ButtonComponent {

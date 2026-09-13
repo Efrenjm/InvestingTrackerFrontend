@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["vitest/globals", "node"]
+  },
+  "include": ["src/**/*.ts", ".storybook/**/*.ts", "tools/fixtures/lint/**/*.ts"],
+  "exclude": ["node_modules", "dist", "storybook-static"]
+}

@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { AbstractControl, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuthStoreService } from '../../core/services/auth-store.service';
 import { UserService } from '../../core/services/user-http.service';
 import { AuthHttpService } from '../../core/services/auth-http.service';
@@ -11,7 +12,6 @@ type ProfileSection = 'general' | 'security';
 
 @Component({
   selector: 'app-profile',
-  standalone: true,
   imports: [ReactiveFormsModule, InputComponent, ButtonComponent, AvatarComponent],
   template: `
     <div class="max-w-4xl mx-auto space-y-8 pb-12">
@@ -52,13 +52,15 @@ type ProfileSection = 'general' | 'security';
           <div class="p-8 space-y-8">
             <div class="flex items-center gap-6">
               <app-avatar
-                [imageUrl]="user()?.avatarUrl"
+                [imageUrl]="$safeNavigationMigration(user()?.avatarUrl)"
                 [name]="userName()"
                 [size]="80"
               ></app-avatar>
               <div>
                 <h3 class="font-medium text-gray-900">Profile Picture</h3>
-                <p class="text-sm text-gray-500">Update your avatar. This will be visible to other users.</p>
+                <p class="text-sm text-gray-500">
+                  Update your avatar. This will be visible to other users.
+                </p>
                 <!-- URL input for simplicity in this prototype -->
                 <div class="mt-4 flex gap-4">
                   <app-input
@@ -72,7 +74,11 @@ type ProfileSection = 'general' | 'security';
               </div>
             </div>
 
-            <form [formGroup]="profileForm" (ngSubmit)="updateProfile()" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <form
+              [formGroup]="profileForm"
+              (ngSubmit)="updateProfile()"
+              class="grid grid-cols-1 md:grid-cols-2 gap-6"
+            >
               <app-input
                 label="Username"
                 [formGroup]="profileForm"
@@ -85,7 +91,7 @@ type ProfileSection = 'general' | 'security';
                 controlName="firstName"
                 placeholder="John"
               ></app-input>
-               <app-input
+              <app-input
                 label="Middle Name"
                 [formGroup]="profileForm"
                 controlName="middleName"
@@ -99,10 +105,7 @@ type ProfileSection = 'general' | 'security';
               ></app-input>
 
               <div class="md:col-span-2 flex justify-end pt-4 border-t border-gray-50">
-                <app-button
-                  type="submit"
-                  [disabled]="profileForm.invalid || loading()"
-                >
+                <app-button type="submit" [disabled]="profileForm.invalid || loading()">
                   Save Changes
                 </app-button>
               </div>
@@ -116,8 +119,12 @@ type ProfileSection = 'general' | 'security';
         <div class="space-y-6">
           <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
             <h3 class="text-lg font-bold text-gray-900 mb-6">Change Password</h3>
-            <form [formGroup]="passwordForm" (ngSubmit)="updatePassword()" class="space-y-6 max-w-md">
-               <app-input
+            <form
+              [formGroup]="passwordForm"
+              (ngSubmit)="updatePassword()"
+              class="space-y-6 max-w-md"
+            >
+              <app-input
                 label="Current Password"
                 type="password"
                 [formGroup]="passwordForm"
@@ -140,10 +147,7 @@ type ProfileSection = 'general' | 'security';
               ></app-input>
 
               <div class="flex justify-end pt-4">
-                <app-button
-                  type="submit"
-                  [disabled]="passwordForm.invalid || loading()"
-                >
+                <app-button type="submit" [disabled]="passwordForm.invalid || loading()">
                   Update Password
                 </app-button>
               </div>
@@ -165,13 +169,13 @@ type ProfileSection = 'general' | 'security';
                   Change Email
                 </app-button>
               </div>
-               <div class="space-y-4">
+              <div class="space-y-4">
                 <app-input
                   label="Phone Number"
                   [formGroup]="contactForm"
                   controlName="phoneNumber"
                 ></app-input>
-                 <app-button variant="outline" size="sm" (click)="initPhoneUpdate()">
+                <app-button variant="outline" size="sm" (click)="initPhoneUpdate()">
                   Change Phone
                 </app-button>
               </div>
@@ -181,10 +185,11 @@ type ProfileSection = 'general' | 'security';
       }
     </div>
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfileComponent {
-  private readonly fb = inject(FormBuilder);
+  private readonly fb = inject(FormBuilder).nonNullable;
+  private readonly destroyRef = inject(DestroyRef);
   private readonly authStore = inject(AuthStoreService);
   private readonly userService = inject(UserService);
   private readonly authHttp = inject(AuthHttpService);
@@ -199,23 +204,26 @@ export class ProfileComponent {
     return `${u.firstName} ${u.lastName}`;
   });
 
-  profileForm: FormGroup = this.fb.group({
-    username: ['', Validators.required],
-    firstName: ['', Validators.required],
+  profileForm = this.fb.group({
+    username: ['', (control: AbstractControl) => Validators.required(control)],
+    firstName: ['', (control: AbstractControl) => Validators.required(control)],
     middleName: [''],
-    lastName: ['', Validators.required],
-    profilePicture: ['']
+    lastName: ['', (control: AbstractControl) => Validators.required(control)],
+    profilePicture: [''],
   });
 
-  passwordForm: FormGroup = this.fb.group({
-    oldPassword: ['', Validators.required],
-    newPassword: ['', [Validators.required, Validators.minLength(8)]],
-    confirmPassword: ['', Validators.required]
-  }, { validators: this.passwordMatchValidator });
+  passwordForm = this.fb.group(
+    {
+      oldPassword: ['', (control: AbstractControl) => Validators.required(control)],
+      newPassword: ['', [(control: AbstractControl) => Validators.required(control), Validators.minLength(8)]],
+      confirmPassword: ['', (control: AbstractControl) => Validators.required(control)],
+    },
+    { validators: this.passwordMatchValidator },
+  );
 
-  contactForm: FormGroup = this.fb.group({
+  contactForm = this.fb.group({
     email: [{ value: '', disabled: true }],
-    phoneNumber: [{ value: '', disabled: true }]
+    phoneNumber: [{ value: '', disabled: true }],
   });
 
   constructor() {
@@ -230,37 +238,38 @@ export class ProfileComponent {
         firstName: u.firstName,
         middleName: u.middleName,
         lastName: u.lastName,
-        profilePicture: u.avatarUrl
+        profilePicture: u.avatarUrl ?? '',
       });
       this.contactForm.patchValue({
         email: u.email,
-        phoneNumber: u.phoneNumber
+        phoneNumber: u.phoneNumber,
       });
     }
   }
 
-  private passwordMatchValidator(g: FormGroup) {
+  private passwordMatchValidator(this: void, g: AbstractControl) {
     return g.get('newPassword')?.value === g.get('confirmPassword')?.value
-      ? null : { mismatch: true };
+      ? null
+      : { mismatch: true };
   }
 
   updateProfile() {
     if (this.profileForm.invalid) return;
 
     this.loading.set(true);
-    this.userService.updateProfile(this.profileForm.value).subscribe({
+    this.userService.updateProfile(this.profileForm.getRawValue()).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (updatedUser) => {
         this.authStore.updateUser({
           username: updatedUser.username,
           firstName: updatedUser.firstName,
           middleName: updatedUser.middleName,
           lastName: updatedUser.lastName,
-          avatarUrl: updatedUser.avatarUrl
+          avatarUrl: updatedUser.avatarUrl,
         });
         this.loading.set(false);
         alert('Profile updated successfully!');
       },
-      error: () => this.loading.set(false)
+      error: () => this.loading.set(false),
     });
   }
 
@@ -268,14 +277,14 @@ export class ProfileComponent {
     if (this.passwordForm.invalid) return;
 
     this.loading.set(true);
-    const { oldPassword, newPassword } = this.passwordForm.value;
-    this.authHttp.updatePassword({ oldPassword, newPassword }).subscribe({
+    const { oldPassword, newPassword } = this.passwordForm.getRawValue();
+    this.authHttp.updatePassword({ oldPassword, newPassword }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.loading.set(false);
         this.passwordForm.reset();
         alert('Password updated successfully!');
       },
-      error: () => this.loading.set(false)
+      error: () => this.loading.set(false),
     });
   }
 

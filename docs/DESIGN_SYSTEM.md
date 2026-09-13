@@ -4,6 +4,10 @@
 
 This document is the frontend contract for shared UI, design tokens, styling layers, Storybook representation, responsive behavior, accessibility, and contribution rules. It governs new shared UI work and focused migrations; it does not authorize a repository-wide visual rewrite.
 
+This is the single source of truth for frontend styles, including the visual direction integrated from the September 2026 reference review. Agents must read this guide before styling work and update it when a visual convention changes. Screenshots, historical reviews, specifications, and plans do not establish competing styling policy.
+
+Final maintained guides belong in `frontend/docs/`. Drafts, reviews, plans, specifications, and Superpowers artifacts belong in `frontend/.docs/` (for example, `.docs/reviews/`, `.docs/specs/`, and `.docs/superpowers/`). Promote accepted conventions into this guide; archive their supporting material outside `docs/`. Feature-local behavior documentation retains its existing architecture-defined location.
+
 [`AGENTS.md`](../AGENTS.md) remains the always-loaded frontend rule source. [`ARCHITECTURE.md`](ARCHITECTURE.md) remains the source for structural boundaries and ownership. When work crosses these concerns, follow all three documents: this guide decides visual and shared-component conventions, while the other guides retain their stated authority.
 
 ## Audience and governance
@@ -18,7 +22,7 @@ Until BL-007 establishes an architecture-decision-record process, record every d
 
 This foundation defines how the frontend should name and consume tokens, divide styling responsibilities, classify components, represent supported behavior, and review shared UI changes. It applies to application UI, shared form controls, application shell, feature UI, and the stories and tests that describe those contracts.
 
-It establishes target conventions for incremental work. It does not assert that every target directory, token, component, theme, or story already exists, and it does not assign final brand values.
+It establishes target conventions and visual direction for incremental work. Normative rules below govern new work; the current-state section describes migration debt, and the unresolved-decisions section identifies values that have not been standardized. This document does not assert that every target directory, token, component, theme, or story already exists.
 
 ## Design principles
 
@@ -36,7 +40,52 @@ It establishes target conventions for incremental work. It does not assert that 
 - `src/material-theme.scss` independently configures Angular Material with azure and blue palettes and Roboto typography.
 - Tailwind theme tokens, application custom properties, and Angular Material theme values are not yet aligned into a single semantic token contract.
 - Global Material overrides and application-specific global classes already exist in `styles.css`; under the target rules below, these are migration debt rather than patterns to copy.
-- This documentation task changes no CSS, theme, font, or component styling and does not claim that the current values are final brand decisions.
+- Current values are not automatically final brand decisions. Updating this guide does not implement a theme or migrate components.
+
+The 2026-09-11 repository review confirmed the following gaps. Recheck affected consumers when implementing a focused migration and update this inventory when resolved.
+
+| Gap | Evidence | Required alignment |
+|---|---|---|
+| Duplicate application palettes | `src/styles.css`: `#004D40` versus `#094c42` for primary treatments; `#FBF8F3` versus `#fbf9f6` for canvas treatments | Map equivalent purposes to one semantic role. |
+| Independent Material identity | `src/material-theme.scss` uses azure/blue and Roboto; application CSS imports Inter, Montserrat, and Poppins | Align Material with the visual and typography rules below. |
+| Overlapping global base styles | Both stylesheets set body typography and colors; `angular.json` loads Material before application CSS | Establish explicit token mapping; stylesheet order alone is not a theme contract. |
+| Literal values in shared UI | `src/app/shared/components/card/stat-card.component.ts` and `navbar/navbar.component.ts` embed colors and sizes; card implementations differ in radius declarations | Migrate representative shared consumers to semantic roles. |
+| Inconsistent utility vocabulary | Avatar and sidebar use `primary-*`; the inspected Tailwind theme declares `brand-primary` | Verify generated CSS and resolve utility mappings before relying on them. |
+| Incomplete theme and story coverage | Material sets `color-scheme: light`; OTP is the only colocated shared-component story | Validate theme mappings and add stories when shared components are migrated. |
+
+## Visual direction and reference interpretation
+
+Use a calm neutral canvas, rounded panels, generous but consistent spacing, clear information hierarchy, and green primary actions. The supplied workspace-root `dashboard.png`, `accounts.png`, and `dark_layout.png` establish this direction. Their relevant patterns are captured here so agents do not need access to those files to follow the contract.
+
+- The light dashboard uses white panels over a warm neutral canvas, prominent metrics, pastel account treatments, and a large primary area beside supporting panels.
+- The accounts view repeats that language with a green wallet summary, category cards, a table, transactions, and supporting panels.
+- The dark dashboard preserves the hierarchy using a near-black canvas, distinct dark panels, subtle borders, and brighter green accents.
+
+The PNGs are desktop inspiration, not pixel-exact acceptance fixtures. They do not define mobile behavior, interactive states, exact font families, accessible color pairs, production copy, or valid financial data. Do not reproduce their mixed-language labels, inconsistent monetary notation, truncated text, branding, or incidental content. Reference inspection did not include pixel sampling or contrast measurements; accessibility must be verified on the implementation.
+
+### Color meaning and surface treatment
+
+- Keep backgrounds, panel surfaces, text, borders, actions, and statuses semantically distinct.
+- Use mint, yellow, and lavender treatments for account categories where appropriate. Category color must not imply success, warning, or danger; category-to-business-meaning mapping belongs to feature UI.
+- Pair status treatments with labels, icons, or another non-color cue. A category card can independently carry a warning or error state.
+- Use restrained elevation and consistent panel radii. Dark panels may use subtle borders to distinguish surfaces; do not depend on shadows alone.
+- Use pill shapes for appropriate badges and actions, with separate radius roles for controls and panels. Select exact scales through the unresolved-decisions process below.
+
+### Typography and financial information
+
+- Use Inter as the target shared family, with a system sans-serif fallback, across application content and Material controls. This is a project decision based on an already imported family, not a font identification from the PNGs. Existing Montserrat, Poppins, and Roboto consumers remain migration debt until a focused change aligns them.
+- Define a consistent hierarchy for page titles, panel titles, body text, supporting labels, and prominent metrics. Use weight and size deliberately; do not introduce extra font families to distinguish financial data.
+- Use tabular numerals for comparable financial amounts and align numeric columns consistently. Keep currency and descriptive labels available alongside emphasized balances.
+- Format amounts and dates consistently with the feature's locale and currency requirements. Do not infer currency or sign from color or copy sample notation from the PNGs.
+- Charts must provide labels, legends where needed, and a textual equivalent for essential information. Distinguish series and financial outcomes beyond color alone.
+
+### Composition and navigation
+
+- Wide dashboard and account compositions use a larger primary area and a smaller supporting area when content permits. Group related summaries; derive widths from content rather than screenshot dimensions.
+- Stack panels when content no longer fits, preserving reading order and essential actions. A table must explicitly support contained overflow or a labeled compact representation without discarding necessary information.
+- Use one spacing scale for composition and component anatomy. Avoid isolated dimensions that make related components diverge.
+- Navigation requires clear active styling and consistent icon geometry. The horizontal header in the references does not mandate replacing the current sidebar; shell composition and narrow-screen navigation require a focused task that preserves access to existing routes.
+- Apply the same visual language to authentication and other features through shared components; dashboard layouts are not templates for every page.
 
 ## Styling layers
 
@@ -93,7 +142,19 @@ Components consume semantic tokens and must not infer meaning from raw color nam
 
 ## Themes
 
-Light, dark, and high-contrast are extension points over the same semantic roles. The current application configures a light Material color scheme; this document does not claim that a complete light token contract, dark theme, or high-contrast theme is already implemented.
+Light and dark are the target visual themes over the same semantic roles. High-contrast remains an extension point, not an implemented or visually specified theme. The current application configures a light Material color scheme; neither a complete light token contract nor dark support is established by this guide alone.
+
+| Role | Light direction | Dark direction |
+|---|---|---|
+| Canvas | Warm off-white | Near-black |
+| Primary panels | White | Distinct lighter dark surface |
+| Main text | Dark neutral | Light neutral |
+| Supporting text | Muted, readable neutral | Muted, readable neutral adapted to dark surfaces |
+| Primary action | Deep green | Brighter green |
+| Text on primary action | Foreground validated against the light action | Independently validated foreground; do not assume white text |
+| Category surfaces | Soft mint, yellow, lavender | Darker related treatments with readable foregrounds |
+
+Do not mechanically invert colors or reuse foreground/background pairs without validation. Theme selection behavior and persistence require an explicit implementation decision; this document does not add a theme switcher.
 
 A new theme must preserve semantic intent, define every required role rather than depend on accidental fallbacks, and meet WCAG AA contrast requirements. Theme work must validate component states and non-color cues, not only static default surfaces.
 
@@ -192,9 +253,15 @@ The existing OTP input story uses the older `Shared/OtpInput` title. It remains 
 - [ ] Required colocated Storybook stories and `play` interactions are present, and the static Storybook build passes when shared UI or stories changed.
 - [ ] Consumer and migration impact is recorded, and breaking shared-contract changes migrate affected consumers together.
 
-## Deliberately deferred visual decisions
+## Unresolved visual values and migration rules
 
-Brand palette values, final font selection, detailed typography and density scales, final breakpoint values, icon-set policy, illustration style, motion personality, and complete component visual variants are reserved for a dedicated visual-design iteration. Until reviewed decisions exist, do not elevate current incidental values into permanent brand rules or create parallel placeholder policies.
+The visual direction, target family, theme roles, category/status separation, and composition rules above are active guidance. Exact palette pairs, typography sizes and line heights, spacing and sizing scales, radius values, elevation, density, breakpoint values, icon-set selection, illustration style, motion values, and complete component variants still require explicit selection and implementation validation. No missing value should be inferred as an approved measurement from the PNGs.
+
+When a task needs an unresolved value, inspect existing consumers, propose the smallest coherent shared scale or role mapping, validate representative states, and record the resulting decision here under the applicable section. Follow the governance requirements for public token changes. Until that happens, preserve existing behavior outside the task and document any scoped compatibility exception; do not create another normative style guide or silently promote incidental values to global policy.
+
+Align application tokens and Material mappings before migrating dependent shared components. Prioritize representative buttons, inputs, and cards with their consumers and stories, then feature composition. Navigation changes remain a focused shell task. Existing raw colors and utilities are migration evidence, not alternative conventions.
+
+For theme and shared-component migrations, verify applicable states, keyboard focus, contrast, reduced motion, narrow layouts, long labels, and 200% zoom. Compare rendered screens against the visual patterns described here. A static screenshot match or a successful Storybook build alone does not demonstrate accessibility or correct interaction.
 
 ## Related documentation
 
