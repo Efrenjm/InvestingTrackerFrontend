@@ -6,7 +6,7 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { AuthHttpService } from '../../../core/services/auth-http.service';
 import { AuthStoreService } from '../../../core/services/auth-store.service';
 import { of } from 'rxjs';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { NotificationService } from '../../../core/services/notification.service';
 import { vi } from 'vitest';
 
 describe('LoginComponent', () => {
@@ -14,7 +14,7 @@ describe('LoginComponent', () => {
   let fixture: ComponentFixture<LoginComponent>;
   let authHttpMock: any;
   let authStoreMock: any;
-  let snackBarMock: any;
+  let notificationMock: any;
 
   beforeEach(async () => {
     authHttpMock = {
@@ -26,8 +26,8 @@ describe('LoginComponent', () => {
       fetchUser: vi.fn().mockReturnValue(of({ user: { id: '1', email: 'test@example.com' } })),
       setAuthenticatedUser: vi.fn()
     };
-    snackBarMock = {
-      open: vi.fn()
+    notificationMock = {
+      error: vi.fn()
     };
 
     await TestBed.configureTestingModule({
@@ -37,7 +37,7 @@ describe('LoginComponent', () => {
         provideAnimationsAsync(),
         { provide: AuthHttpService, useValue: authHttpMock },
         { provide: AuthStoreService, useValue: authStoreMock },
-        { provide: MatSnackBar, useValue: snackBarMock }
+        { provide: NotificationService, useValue: notificationMock }
       ]
     }).compileComponents();
 

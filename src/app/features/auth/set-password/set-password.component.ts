@@ -8,7 +8,8 @@ import { ButtonComponent } from '../../../shared/components/button/button.compon
 import { AuthHttpService } from '../../../core/services/auth-http.service';
 import { AuthStoreService } from '../../../core/services/auth-store.service';
 import { RegistrationStateService } from '../../../core/services/registration-state.service';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { NotificationService } from '../../../core/services/notification.service';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { getApiErrorMessage } from '../../../core/errors/api-error.mapper';
@@ -37,7 +38,7 @@ export class SetPasswordComponent {
   private readonly authStore = inject(AuthStoreService);
   private readonly registrationState = inject(RegistrationStateService);
   private readonly router = inject(Router);
-  private readonly snackBar = inject(MatSnackBar);
+  private readonly notifications = inject(NotificationService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly isLoading = signal(false);
@@ -104,7 +105,7 @@ export class SetPasswordComponent {
     if (this.passwordForm.invalid) return;
 
     if (!this.passwordsMatch) {
-      this.snackBar.open('Passwords do not match.', 'Close', { duration: 4000 });
+      this.notifications.warning('Passwords do not match.');
       return;
     }
 
@@ -135,7 +136,7 @@ export class SetPasswordComponent {
             tap(() => {
               this.registrationState.clear();
               this.isLoading.set(false);
-              this.snackBar.open('Password created successfully! Welcome to Investing Tracker.', 'Close', { duration: 4000 });
+              this.notifications.success('Password created successfully! Welcome to Investing Tracker.');
               void this.router.navigate(['/dashboard']);
             })
           );
@@ -145,7 +146,7 @@ export class SetPasswordComponent {
         error: (err: unknown) => {
           this.isLoading.set(false);
           const message = getApiErrorMessage(err, 'Error updating password. Please try again.');
-          this.snackBar.open(message, 'Close', { duration: 5000 });
+          this.notifications.error(message);
         }
       });
   }
@@ -153,7 +154,7 @@ export class SetPasswordComponent {
   private finishAndGoToLogin() {
     this.isLoading.set(false);
     this.registrationState.clear();
-    this.snackBar.open('Password set successfully! Please log in.', 'Close', { duration: 4000 });
+    this.notifications.success('Password set successfully! Please log in.');
     void this.router.navigate(['/auth/login']);
   }
 }

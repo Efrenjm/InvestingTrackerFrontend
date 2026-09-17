@@ -5,7 +5,8 @@ import { AuthLayoutComponent } from '../../../shared/layouts/auth-layout/auth-la
 import { OtpInputComponent } from '../../../shared/components/otp-input/otp-input.component';
 import { AuthHttpService } from '../../../core/services/auth-http.service';
 import { RegistrationStateService } from '../../../core/services/registration-state.service';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { NotificationService } from '../../../core/services/notification.service';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { getApiErrorMessage } from '../../../core/errors/api-error.mapper';
@@ -29,7 +30,7 @@ export class OtpVerifyComponent implements OnInit, OnDestroy {
   private readonly authHttp = inject(AuthHttpService);
   private readonly registrationState = inject(RegistrationStateService);
   private readonly router = inject(Router);
-  private readonly snackBar = inject(MatSnackBar);
+  private readonly notifications = inject(NotificationService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly isLoading = signal(false);
@@ -46,7 +47,7 @@ export class OtpVerifyComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     if (!this.registrationState.hasActiveRegistration()) {
-      this.snackBar.open('Registration session expired. Please register again.', 'Close', { duration: 5000 });
+      this.notifications.warning('Registration session expired. Please register again.');
       void this.router.navigate(['/auth/register']);
       return;
     }
@@ -86,7 +87,7 @@ export class OtpVerifyComponent implements OnInit, OnDestroy {
           this.isLoading.set(false);
           this.isSuccess.set(true);
           this.registrationState.completeVerification();
-          this.snackBar.open('Account verified successfully! Please log in.', 'Close', { duration: 3000 });
+          this.notifications.success('Account verified successfully! Please log in.');
 
           setTimeout(() => {
             void this.router.navigate(['/auth/login']);
@@ -99,11 +100,7 @@ export class OtpVerifyComponent implements OnInit, OnDestroy {
             this.otpInput?.reset();
             this.hasError.set(false);
           }, 600);
-          this.snackBar.open(
-            getApiErrorMessage(err, 'Incorrect or expired code. Please try again.'),
-            'Close',
-            { duration: 4000 }
-          );
+          this.notifications.error(getApiErrorMessage(err, 'Incorrect or expired code. Please try again.'));
         }
     });
   }
@@ -118,13 +115,13 @@ export class OtpVerifyComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.isResending.set(false);
-          this.snackBar.open('A new code has been sent!', 'Close', { duration: 3000 });
+          this.notifications.success('A new code has been sent!');
           this.startCooldown();
           this.otpInput?.reset();
         },
         error: (err) => {
           this.isResending.set(false);
-          this.snackBar.open(getApiErrorMessage(err, 'Error resending code. Please wait and try again.'), 'Close', { duration: 4000 });
+          this.notifications.error(getApiErrorMessage(err, 'Error resending code. Please wait and try again.'));
         }
     });
   }

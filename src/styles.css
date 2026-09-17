@@ -53,6 +53,49 @@ body {
   font-family: var(--font-sans);
 }
 
+.notification-toast {
+  --mat-snack-bar-container-shape: 0.75rem;
+  --mat-snack-bar-supporting-text-weight: 600;
+  --mat-snack-bar-button-color: currentColor;
+  border-left: 0.3rem solid currentColor;
+  max-width: min(32rem, calc(100vw - 2rem)) !important;
+}
+
+.notification-toast--info {
+  --mat-snack-bar-container-color: #dbeafe;
+  --mat-snack-bar-supporting-text-color: #1e3a8a;
+  color: #1e3a8a;
+}
+
+.notification-toast--success {
+  --mat-snack-bar-container-color: #dcfce7;
+  --mat-snack-bar-supporting-text-color: #166534;
+  color: #166534;
+}
+
+.notification-toast--warning {
+  --mat-snack-bar-container-color: #fef3c7;
+  --mat-snack-bar-supporting-text-color: #92400e;
+  color: #92400e;
+}
+
+.notification-toast--error {
+  --mat-snack-bar-container-color: #fee2e2;
+  --mat-snack-bar-supporting-text-color: #991b1b;
+  color: #991b1b;
+}
+
+.notification-toast .mat-mdc-snackbar-surface {
+  background-color: var(--mat-snack-bar-container-color);
+  color: var(--mat-snack-bar-supporting-text-color);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .notification-toast {
+    animation: none;
+  }
+}
+
 h1, h2, h3, h4 {
   font-family: var(--font-display);
 }

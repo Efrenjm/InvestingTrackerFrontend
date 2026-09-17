@@ -5,7 +5,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { AuthHttpService } from '../../../core/services/auth-http.service';
 import { RegistrationStateService } from '../../../core/services/registration-state.service';
 import { Router, provideRouter } from '@angular/router';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { NotificationService } from '../../../core/services/notification.service';
 import { of, throwError } from 'rxjs';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
@@ -14,7 +14,7 @@ describe('RegisterComponent', () => {
   let fixture: ComponentFixture<RegisterComponent>;
   let router: Router;
   let navigateSpy: any;
-  let snackBarOpenSpy: any;
+  let notificationErrorSpy: any;
   
   let authHttpSpy: any;
   let registrationStateSpy: any;
@@ -26,21 +26,20 @@ describe('RegisterComponent', () => {
     registrationStateSpy = {
       setRegistrationData: vi.fn()
     };
+    notificationErrorSpy = vi.fn();
 
     await TestBed.configureTestingModule({
       imports: [RegisterComponent, ReactiveFormsModule, BrowserAnimationsModule],
       providers: [
         provideRouter([]),
         { provide: AuthHttpService, useValue: authHttpSpy },
-        { provide: RegistrationStateService, useValue: registrationStateSpy }
+        { provide: RegistrationStateService, useValue: registrationStateSpy },
+        { provide: NotificationService, useValue: { error: notificationErrorSpy } }
       ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(RegisterComponent);
     component = fixture.componentInstance;
-    
-    const snackBar = fixture.debugElement.injector.get(MatSnackBar);
-    snackBarOpenSpy = vi.spyOn(snackBar, 'open').mockImplementation(() => ({} as any));
     
     router = TestBed.inject(Router);
     navigateSpy = vi.spyOn(router, 'navigate').mockImplementation(() => Promise.resolve(true));
@@ -98,7 +97,7 @@ describe('RegisterComponent', () => {
     expect(component.isLoading()).toBe(false);
   });
 
-  it('should show snackbar on registration error', () => {
+  it('should show an error notification on registration error', () => {
     const email = 'test@example.com';
     const password = 'Password1@';
     
@@ -111,7 +110,7 @@ describe('RegisterComponent', () => {
     component.onSubmit();
     
     expect(authHttpSpy.register).toHaveBeenCalledWith({ email, password });
-    expect(snackBarOpenSpy).toHaveBeenCalledWith('Registration failed', 'Close', { duration: 5000 });
+    expect(notificationErrorSpy).toHaveBeenCalledWith('An error occurred during registration');
     expect(component.isLoading()).toBe(false);
   });
 });

@@ -7,7 +7,8 @@ import { InputComponent } from '../../../shared/components/input/input.component
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { AuthHttpService } from '../../../core/services/auth-http.service';
 import { RegistrationStateService } from '../../../core/services/registration-state.service';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { NotificationService } from '../../../core/services/notification.service';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { getApiErrorMessage } from '../../../core/errors/api-error.mapper';
@@ -35,7 +36,7 @@ export class RegisterComponent {
   private readonly authHttp = inject(AuthHttpService);
   private readonly registrationState = inject(RegistrationStateService);
   private readonly router = inject(Router);
-  private readonly snackBar = inject(MatSnackBar);
+  private readonly notifications = inject(NotificationService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly isLoading = signal(false);
@@ -82,7 +83,7 @@ export class RegisterComponent {
         error: (err) => {
           this.isLoading.set(false);
           const message = getApiErrorMessage(err, 'An error occurred during registration');
-          this.snackBar.open(message, 'Close', { duration: 5000 });
+          this.notifications.error(message);
         }
       });
   }

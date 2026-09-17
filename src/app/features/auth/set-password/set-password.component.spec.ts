@@ -6,7 +6,7 @@ import { AuthHttpService } from '../../../core/services/auth-http.service';
 import { AuthStoreService } from '../../../core/services/auth-store.service';
 import { RegistrationStateService } from '../../../core/services/registration-state.service';
 import { Router, provideRouter } from '@angular/router';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { NotificationService } from '../../../core/services/notification.service';
 import { of, throwError } from 'rxjs';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { signal } from '@angular/core';
@@ -16,7 +16,7 @@ describe('SetPasswordComponent', () => {
   let fixture: ComponentFixture<SetPasswordComponent>;
   let router: Router;
   let navigateSpy: any;
-  let snackBarOpenSpy: any;
+  let notificationErrorSpy: any;
 
   let authHttpSpy: any;
   let authStoreSpy: any;
@@ -34,6 +34,7 @@ describe('SetPasswordComponent', () => {
       username: signal('test@example.com'),
       clear: vi.fn()
     };
+    notificationErrorSpy = vi.fn();
 
     await TestBed.configureTestingModule({
       imports: [SetPasswordComponent, ReactiveFormsModule, BrowserAnimationsModule],
@@ -41,15 +42,17 @@ describe('SetPasswordComponent', () => {
         provideRouter([]),
         { provide: AuthHttpService, useValue: authHttpSpy },
         { provide: AuthStoreService, useValue: authStoreSpy },
-        { provide: RegistrationStateService, useValue: registrationStateSpy }
+        { provide: RegistrationStateService, useValue: registrationStateSpy },
+        { provide: NotificationService, useValue: {
+          error: notificationErrorSpy,
+          success: vi.fn(),
+          warning: vi.fn(),
+        } }
       ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(SetPasswordComponent);
     component = fixture.componentInstance;
-
-    const snackBar = fixture.debugElement.injector.get(MatSnackBar);
-    snackBarOpenSpy = vi.spyOn(snackBar, 'open').mockImplementation(() => ({} as any));
 
     router = TestBed.inject(Router);
     navigateSpy = vi.spyOn(router, 'navigate').mockImplementation(() => Promise.resolve(true));
@@ -113,7 +116,7 @@ describe('SetPasswordComponent', () => {
 
     component.onSubmit();
 
-    expect(snackBarOpenSpy).toHaveBeenCalledWith('Password update failed', 'Close', { duration: 5000 });
+    expect(notificationErrorSpy).toHaveBeenCalledWith('Error updating password. Please try again.');
     expect(component.isLoading()).toBe(false);
   });
 });

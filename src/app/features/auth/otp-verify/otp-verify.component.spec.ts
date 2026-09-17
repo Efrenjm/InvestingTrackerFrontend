@@ -4,7 +4,7 @@ import { OtpVerifyComponent } from './otp-verify.component';
 import { AuthHttpService } from '../../../core/services/auth-http.service';
 import { RegistrationStateService } from '../../../core/services/registration-state.service';
 import { Router, provideRouter } from '@angular/router';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { NotificationService } from '../../../core/services/notification.service';
 import { of, throwError } from 'rxjs';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { signal } from '@angular/core';
@@ -14,10 +14,10 @@ describe('OtpVerifyComponent', () => {
   let fixture: ComponentFixture<OtpVerifyComponent>;
   let router: Router;
   let navigateSpy: any;
-  let snackBarOpenSpy: any;
-  
+  let notificationMock: any;
+
   let authHttpSpy: any;
-  
+
   let mockHasActiveRegistration: boolean;
   let mockUserId: string | null;
   let mockUsername: string | null;
@@ -46,7 +46,8 @@ describe('OtpVerifyComponent', () => {
       providers: [
         provideRouter([]),
         { provide: AuthHttpService, useValue: authHttpSpy },
-        { provide: RegistrationStateService, useValue: registrationStateMock }
+        { provide: RegistrationStateService, useValue: registrationStateMock },
+        { provide: NotificationService, useValue: { warning: vi.fn(), success: vi.fn(), error: vi.fn() } }
       ]
     }).compileComponents();
   });
@@ -54,9 +55,8 @@ describe('OtpVerifyComponent', () => {
   function createComponent() {
     fixture = TestBed.createComponent(OtpVerifyComponent);
     component = fixture.componentInstance;
-    
-    const snackBar = fixture.debugElement.injector.get(MatSnackBar);
-    snackBarOpenSpy = vi.spyOn(snackBar, 'open').mockImplementation(() => ({} as any));
+
+    notificationMock = TestBed.inject(NotificationService);
 
     router = TestBed.inject(Router);
     navigateSpy = vi.spyOn(router, 'navigate').mockImplementation(() => Promise.resolve(true));
@@ -66,8 +66,8 @@ describe('OtpVerifyComponent', () => {
   it('should redirect to /auth/register if no active registration session on init', () => {
     mockHasActiveRegistration = false;
     createComponent();
-    
-    expect(snackBarOpenSpy).toHaveBeenCalledWith('Registration session expired. Please register again.', 'Close', { duration: 5000 });
+
+    expect(notificationMock.warning).toHaveBeenCalledWith('Registration session expired. Please register again.');
     expect(navigateSpy).toHaveBeenCalledWith(['/auth/register']);
   });
 
@@ -76,15 +76,15 @@ describe('OtpVerifyComponent', () => {
       vi.useFakeTimers();
       mockHasActiveRegistration = true;
       createComponent();
-      
+
       expect(component.resendCooldown()).toBe(60);
-      
+
       vi.advanceTimersByTime(1000);
       expect(component.resendCooldown()).toBe(59);
-      
+
       vi.advanceTimersByTime(59000);
       expect(component.resendCooldown()).toBe(0);
-      
+
       component.ngOnDestroy();
       vi.useRealTimers();
     });
@@ -100,7 +100,7 @@ describe('OtpVerifyComponent', () => {
       component.onCodeComplete('123456');
 
       expect(authHttpSpy.verifyCode).toHaveBeenCalledWith({ userId: 'user123', code: '123456' });
-      
+
       vi.advanceTimersByTime(2500);
       vi.useRealTimers();
     });
@@ -111,19 +111,19 @@ describe('OtpVerifyComponent', () => {
       createComponent();
 
       authHttpSpy.verifyCode.mockReturnValue(throwError(() => ({ error: { message: 'Invalid code' } })));
-      
+
       component.otpInput = {
         reset: vi.fn()
       } as any;
-      
+
       component.onCodeComplete('000000');
-      
+
       expect(authHttpSpy.verifyCode).toHaveBeenCalled();
       expect(component.hasError()).toBe(true);
-      expect(snackBarOpenSpy).toHaveBeenCalledWith('Invalid code', 'Close', { duration: 4000 });
-      
+      expect(notificationMock.error).toHaveBeenCalledWith('Incorrect or expired code. Please try again.');
+
       vi.advanceTimersByTime(600);
-      expect(component.otpInput.reset).toHaveBeenCalled();
+      expect(component.otpInput?.reset).toHaveBeenCalled();
       expect(component.hasError()).toBe(false);
       vi.useRealTimers();
     });

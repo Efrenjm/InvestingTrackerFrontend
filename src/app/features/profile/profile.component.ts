@@ -7,12 +7,14 @@ import { AuthHttpService } from '../../core/services/auth-http.service';
 import { InputComponent } from '../../shared/components/input/input.component';
 import { ButtonComponent } from '../../shared/components/button/button.component';
 import { AvatarComponent } from '../../shared/components/avatar/avatar.component';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { NotificationService } from '../../core/services/notification.service';
 
 type ProfileSection = 'general' | 'security';
 
 @Component({
   selector: 'app-profile',
-  imports: [ReactiveFormsModule, InputComponent, ButtonComponent, AvatarComponent],
+  imports: [ReactiveFormsModule, InputComponent, ButtonComponent, AvatarComponent, MatSnackBarModule],
   template: `
     <div class="max-w-4xl mx-auto space-y-8 pb-12">
       <header>
@@ -188,6 +190,7 @@ type ProfileSection = 'general' | 'security';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfileComponent {
+  private readonly notifications = inject(NotificationService);
   private readonly fb = inject(FormBuilder).nonNullable;
   private readonly destroyRef = inject(DestroyRef);
   private readonly authStore = inject(AuthStoreService);
@@ -267,7 +270,7 @@ export class ProfileComponent {
           avatarUrl: updatedUser.avatarUrl,
         });
         this.loading.set(false);
-        alert('Profile updated successfully!');
+        this.notifications.success('Profile updated successfully!');
       },
       error: () => this.loading.set(false),
     });
@@ -282,17 +285,17 @@ export class ProfileComponent {
       next: () => {
         this.loading.set(false);
         this.passwordForm.reset();
-        alert('Password updated successfully!');
+        this.notifications.success('Password updated successfully!');
       },
       error: () => this.loading.set(false),
     });
   }
 
   initEmailUpdate() {
-    alert('Email update flow initiated. Please check your current email for verification.');
+    this.notifications.info('Email update flow initiated. Please check your current email for verification.');
   }
 
   initPhoneUpdate() {
-    alert('Phone update flow initiated. Please check your phone for verification.');
+    this.notifications.info('Phone update flow initiated. Please check your phone for verification.');
   }
 }
