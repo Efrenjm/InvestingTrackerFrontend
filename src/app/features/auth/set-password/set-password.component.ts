@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -11,6 +11,9 @@ import { RegistrationStateService } from '../../../core/services/registration-st
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { getApiErrorMessage } from '../../../core/errors/api-error.mapper';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { EMPTY, catchError, switchMap, tap } from 'rxjs';
 
 @Component({
   selector: 'app-set-password',
@@ -35,6 +38,7 @@ export class SetPasswordComponent {
   private readonly registrationState = inject(RegistrationStateService);
   private readonly router = inject(Router);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly isLoading = signal(false);
   readonly showPassword = signal(false);
@@ -50,13 +54,15 @@ export class SetPasswordComponent {
   });
 
   constructor() {
-    this.passwordForm.get('newPassword')!.valueChanges.subscribe(v => {
-      this.passwordValue.set(v || '');
-    });
+    this.passwordForm.controls.newPassword.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(v => {
+        this.passwordValue.set(v || '');
+      });
   }
 
-  get newPasswordControl() { return this.passwordForm.get('newPassword') as any; }
-  get confirmPasswordControl() { return this.passwordForm.get('confirmPassword') as any; }
+  get newPasswordControl() { return this.passwordForm.controls.newPassword; }
+  get confirmPasswordControl() { return this.passwordForm.controls.confirmPassword; }
 
   readonly passwordStrength = computed(() => {
     const password = this.passwordValue();
@@ -87,8 +93,7 @@ export class SetPasswordComponent {
   });
 
   get passwordsMatch(): boolean {
-    const { newPassword, confirmPassword } = this.passwordForm.value;
-    return newPassword === confirmPassword;
+    return this.passwordForm.controls.newPassword.value === this.passwordForm.controls.confirmPassword.value;
   }
 
   togglePassword() {
@@ -104,45 +109,51 @@ export class SetPasswordComponent {
     }
 
     this.isLoading.set(true);
-    const { newPassword, confirmPassword } = this.passwordForm.value;
+    const { newPassword } = this.passwordForm.value;
+    if (!newPassword) {
+      this.isLoading.set(false);
+      return;
+    }
 
-    this.authHttp.updatePassword({
-      newPassword: newPassword!
-    }).subscribe({
-      next: () => {
+    this.authHttp.updatePassword({ newPassword }).pipe(
+      switchMap(() => {
         const username = this.registrationState.username();
-        if (username) {
-          // Auto-login with newly set password
-          this.authHttp.login({ username, password: newPassword! }).subscribe({
-            next: (res) => {
-              if (res?.user) {
-                this.authStore.setAuthenticatedUser(res.user);
-              }
+        if (!username) {
+          this.finishAndGoToLogin();
+          return EMPTY;
+        }
+
+        return this.authHttp.login({ username, password: newPassword })
+          .pipe(
+            tap((res) => {
+              if (res?.user) this.authStore.setAuthenticatedUser(res.user);
+            }),
+            catchError(() => {
+              this.finishAndGoToLogin();
+              return EMPTY;
+            }),
+            tap(() => {
               this.registrationState.clear();
               this.isLoading.set(false);
               this.snackBar.open('Password created successfully! Welcome to Investing Tracker.', 'Close', { duration: 4000 });
-              this.router.navigate(['/dashboard']);
-            },
-            error: () => {
-              this.finishAndGoToLogin();
-            }
-          });
-        } else {
-          this.finishAndGoToLogin();
+              void this.router.navigate(['/dashboard']);
+            })
+          );
+      }),
+      takeUntilDestroyed(this.destroyRef)
+      ).subscribe({
+        error: (err: unknown) => {
+          this.isLoading.set(false);
+          const message = getApiErrorMessage(err, 'Error updating password. Please try again.');
+          this.snackBar.open(message, 'Close', { duration: 5000 });
         }
-      },
-      error: (err) => {
-        this.isLoading.set(false);
-        const message = err.error?.message || 'Error updating password. Please try again.';
-        this.snackBar.open(message, 'Close', { duration: 5000 });
-      }
-    });
+      });
   }
 
   private finishAndGoToLogin() {
     this.isLoading.set(false);
     this.registrationState.clear();
     this.snackBar.open('Password set successfully! Please log in.', 'Close', { duration: 4000 });
-    this.router.navigate(['/auth/login']);
+    void this.router.navigate(['/auth/login']);
   }
 }

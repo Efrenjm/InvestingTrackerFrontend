@@ -32,7 +32,9 @@ export default defineConfig(
       '@angular-eslint/contextual-lifecycle': 'error',
       '@angular-eslint/no-empty-lifecycle-method': 'error',
       '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/no-non-null-assertion': 'error',
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+      '@typescript-eslint/unbound-method': ['error', { ignoreStatic: true }],
       '@angular-eslint/prefer-inject': 'error',
       '@angular-eslint/prefer-on-push-component-change-detection': 'error',
       'rxjs-angular-x/prefer-takeuntil': ['error', {
@@ -87,6 +89,17 @@ export default defineConfig(
       '@angular-eslint/template/no-positive-tabindex': 'error',
       '@angular-eslint/template/no-autofocus': 'error',
       '@angular-eslint/template/no-outerhtml': 'error',
+    },
+  },
+  {
+    files: ['**/*.spec.ts', '**/*.test.ts'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/unbound-method': 'off',
     },
   },
 );

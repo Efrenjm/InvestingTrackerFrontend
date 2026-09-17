@@ -18,7 +18,7 @@ export interface AuthResponse {
 
 export interface RegisterRequest {
   email: string;
-  password?: string;
+  password: string;
 }
 
 export interface LoginRequest {
@@ -39,4 +39,8 @@ export interface RegisterResponse {
 export interface VerifyCodeResponse {
   userId: string;
   username: string;
+}
+
+export interface VerificationCodeResponse {
+  code: string;
 }

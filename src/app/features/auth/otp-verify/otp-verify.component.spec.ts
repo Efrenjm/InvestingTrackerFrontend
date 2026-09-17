@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { OtpVerifyComponent } from './otp-verify.component';
 import { AuthHttpService } from '../../../core/services/auth-http.service';
-import { AuthStoreService } from '../../../core/services/auth-store.service';
 import { RegistrationStateService } from '../../../core/services/registration-state.service';
 import { Router, provideRouter } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -18,12 +17,10 @@ describe('OtpVerifyComponent', () => {
   let snackBarOpenSpy: any;
   
   let authHttpSpy: any;
-  let authStoreSpy: any;
   
   let mockHasActiveRegistration: boolean;
   let mockUserId: string | null;
   let mockUsername: string | null;
-  let mockPassword: string | null;
   let registrationStateMock: any;
 
   beforeEach(async () => {
@@ -32,21 +29,15 @@ describe('OtpVerifyComponent', () => {
       login: vi.fn().mockReturnValue(of({ user: { id: 'user123', username: 'test@example.com' } })),
       refreshCode: vi.fn().mockReturnValue(of({}))
     };
-    authStoreSpy = {
-      fetchUser: vi.fn().mockReturnValue(of({ user: { id: 'user123', username: 'test@example.com' } }))
-    };
-
     mockHasActiveRegistration = true;
     mockUserId = 'user123';
     mockUsername = 'test@example.com';
-    mockPassword = 'password123';
-    
     registrationStateMock = {
       hasActiveRegistration: () => mockHasActiveRegistration,
       userId: () => mockUserId,
       username: () => mockUsername,
       maskedUsername: signal('t***@example.com'),
-      getPasswordForAutoLogin: () => mockPassword,
+      completeVerification: vi.fn(),
       clear: vi.fn()
     };
 
@@ -55,7 +46,6 @@ describe('OtpVerifyComponent', () => {
       providers: [
         provideRouter([]),
         { provide: AuthHttpService, useValue: authHttpSpy },
-        { provide: AuthStoreService, useValue: authStoreSpy },
         { provide: RegistrationStateService, useValue: registrationStateMock }
       ]
     }).compileComponents();

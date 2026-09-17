@@ -69,32 +69,48 @@ describe('RegisterComponent', () => {
     expect(authHttpSpy.register).not.toHaveBeenCalled();
   });
 
+  it('should require a strong matching password', () => {
+    component.registerForm.get('email')?.setValue('valid@example.com');
+    component.registerForm.get('password')?.setValue('Password1@');
+    component.registerForm.get('confirmPassword')?.setValue('Different1@');
+
+    component.onSubmit();
+
+    expect(authHttpSpy.register).not.toHaveBeenCalled();
+  });
+
   it('should call AuthHttpService.register, store data, and navigate on success', () => {
     const email = 'test@example.com';
+    const password = 'Password1@';
     
     component.registerForm.get('email')?.setValue(email);
+    component.registerForm.get('password')?.setValue(password);
+    component.registerForm.get('confirmPassword')?.setValue(password);
     
     const mockResponse = { userId: '123', username: email };
     authHttpSpy.register.mockReturnValue(of(mockResponse));
     
     component.onSubmit();
     
-    expect(authHttpSpy.register).toHaveBeenCalledWith({ email });
-    expect(registrationStateSpy.setRegistrationData).toHaveBeenCalledWith('123', email, '');
+    expect(authHttpSpy.register).toHaveBeenCalledWith({ email, password });
+    expect(registrationStateSpy.setRegistrationData).toHaveBeenCalledWith('123', email);
     expect(navigateSpy).toHaveBeenCalledWith(['/auth/verify-code']);
     expect(component.isLoading()).toBe(false);
   });
 
   it('should show snackbar on registration error', () => {
     const email = 'test@example.com';
+    const password = 'Password1@';
     
     component.registerForm.get('email')?.setValue(email);
+    component.registerForm.get('password')?.setValue(password);
+    component.registerForm.get('confirmPassword')?.setValue(password);
     
     authHttpSpy.register.mockReturnValue(throwError(() => ({ error: { message: 'Registration failed' } })));
     
     component.onSubmit();
     
-    expect(authHttpSpy.register).toHaveBeenCalledWith({ email });
+    expect(authHttpSpy.register).toHaveBeenCalledWith({ email, password });
     expect(snackBarOpenSpy).toHaveBeenCalledWith('Registration failed', 'Close', { duration: 5000 });
     expect(component.isLoading()).toBe(false);
   });

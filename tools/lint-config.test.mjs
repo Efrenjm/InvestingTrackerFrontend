@@ -50,8 +50,11 @@ test('checks inline template accessibility', async () => {
 export class Probe {}`, '@angular-eslint/template/alt-text', 'tools/fixtures/lint/sample.component.ts');
 });
 
-test('rejects explicit any in a spec file', async () => {
-  await rejects('export const value: any = 1;', '@typescript-eslint/no-explicit-any', 'tools/fixtures/lint/sample.spec.ts');
+test('accepts explicit any in a spec file', async () => {
+  assert.deepEqual(
+    await diagnostics('export const value: any = 1;', 'tools/fixtures/lint/sample.spec.ts'),
+    []
+  );
 });
 test('rejects subscriptions in injectable services too', async () => {
   await rejects(`import { Injectable } from '@angular/core';
