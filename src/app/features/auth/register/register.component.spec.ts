@@ -15,18 +15,24 @@ describe('RegisterComponent', () => {
   let router: Router;
   let navigateSpy: any;
   let notificationErrorSpy: any;
+  let notificationSuccessSpy: any;
   
   let authHttpSpy: any;
   let registrationStateSpy: any;
 
   beforeEach(async () => {
     authHttpSpy = {
-      register: vi.fn().mockReturnValue(of({ userId: '123', username: 'test@example.com' }))
+      register: vi.fn().mockReturnValue(of({
+        userId: '123',
+        username: 'test@example.com',
+        message: 'You’re almost there! Check your inbox for the next steps.'
+      }))
     };
     registrationStateSpy = {
       setRegistrationData: vi.fn()
     };
     notificationErrorSpy = vi.fn();
+    notificationSuccessSpy = vi.fn();
 
     await TestBed.configureTestingModule({
       imports: [RegisterComponent, ReactiveFormsModule, BrowserAnimationsModule],
@@ -34,7 +40,7 @@ describe('RegisterComponent', () => {
         provideRouter([]),
         { provide: AuthHttpService, useValue: authHttpSpy },
         { provide: RegistrationStateService, useValue: registrationStateSpy },
-        { provide: NotificationService, useValue: { error: notificationErrorSpy } }
+        { provide: NotificationService, useValue: { error: notificationErrorSpy, success: notificationSuccessSpy } }
       ]
     }).compileComponents();
 
@@ -86,13 +92,18 @@ describe('RegisterComponent', () => {
     component.registerForm.get('password')?.setValue(password);
     component.registerForm.get('confirmPassword')?.setValue(password);
     
-    const mockResponse = { userId: '123', username: email };
+    const mockResponse = {
+      userId: '123',
+      username: email,
+      message: 'You’re almost there! Check your inbox for the next steps.'
+    };
     authHttpSpy.register.mockReturnValue(of(mockResponse));
     
     component.onSubmit();
     
     expect(authHttpSpy.register).toHaveBeenCalledWith({ email, password });
     expect(registrationStateSpy.setRegistrationData).toHaveBeenCalledWith('123', email);
+    expect(notificationSuccessSpy).toHaveBeenCalledWith('You’re almost there! Check your inbox for the next steps.');
     expect(navigateSpy).toHaveBeenCalledWith(['/auth/verify-code']);
     expect(component.isLoading()).toBe(false);
   });

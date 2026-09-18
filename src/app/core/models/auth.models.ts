@@ -34,6 +34,7 @@ export interface VerifyCodeRequest {
 export interface RegisterResponse {
   userId: string;
   username: string;
+  message: string;
 }
 
 export interface VerifyCodeResponse {

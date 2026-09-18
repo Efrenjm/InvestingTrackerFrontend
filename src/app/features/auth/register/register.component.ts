@@ -77,6 +77,7 @@ export class RegisterComponent {
       .subscribe({
         next: (res) => {
           this.registrationState.setRegistrationData(res.userId, res.username || email);
+          this.notifications.success(res.message);
           void this.router.navigate(['/auth/verify-code']);
           this.isLoading.set(false);
         },
