@@ -1,8 +1,9 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { AuthResponse, LoginRequest, RegisterRequest, RegisterResponse, VerificationCodeResponse, VerifyCodeRequest, VerifyCodeResponse } from '../models/auth.models';
 import { UpdatePasswordRequest } from '../models/user.models';
+import { SILENT_ERROR_NOTIFICATION } from '../interceptors/error.interceptor';
 
 @Injectable({
   providedIn: 'root'
@@ -32,7 +33,9 @@ export class AuthHttpService {
   }
 
   getCurrentUser(): Observable<AuthResponse> {
-    return this.http.get<AuthResponse>(`${this.baseUrl}/user`);
+    return this.http.get<AuthResponse>(`${this.baseUrl}/user`, {
+      context: new HttpContext().set(SILENT_ERROR_NOTIFICATION, true),
+    });
   }
 
   logout(): Observable<void> {
