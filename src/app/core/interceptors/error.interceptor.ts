@@ -1,18 +1,23 @@
-import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
+import { HttpErrorResponse, HttpHandlerFn, HttpInterceptorFn, HttpRequest } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
+import { getApiErrorMessage } from '../errors/api-error.mapper';
+import { NotificationService } from '../services/notification.service';
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
-  const router = inject(Router);
+  const notifications = inject(NotificationService);
 
+  return handleApiError(notifications, req, next);
+};
+
+export function handleApiError(
+  notifications: NotificationService,
+  req: HttpRequest<unknown>,
+  next: HttpHandlerFn,
+) {
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
-      if ([401, 403].includes(error.status)) {
-        // Redirect to login if unauthorized
-        // The AuthStoreService will handle state cleanup
-        router.navigate(['/auth/login']);
-      }
+      notifications.error(getApiErrorMessage(error, 'An unexpected error occurred. Please try again.'));
       return throwError(() => error);
     })
   );

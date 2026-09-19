@@ -1,6 +1,10 @@
 import { HttpErrorResponse } from '@angular/common/http';
 
 export function getApiErrorMessage(error: unknown, fallback: string): string {
+  if (error instanceof HttpErrorResponse && error.status === 0) {
+    return 'We couldn’t complete your request right now. Please try again later.';
+  }
+
   const payload = getPayload(error);
 
   if (typeof payload === 'string' && payload.trim()) {

@@ -14,6 +14,11 @@ This feature manages user access to the application through a registration syste
 
 ### 3. Persistence and Session
 - The session is maintained via a JWT in an **HttpOnly cookie** (not accessible by JS).
+- The backend stores a separate revocable session record in Redis for each JWT. Logout
+  invalidates only the current browser session; replaying that cookie is rejected by the
+  backend even before the JWT expires.
+- The browser cookie is only a transport credential. Clearing it locally does not replace
+  server-side logout, and Redis availability is required to authenticate protected requests.
 - The frontend retrieves the session upon loading by calling `/user`.
 - Basic user metadata is stored in **IndexedDB** for faster initial loading (optimistic UX).
 

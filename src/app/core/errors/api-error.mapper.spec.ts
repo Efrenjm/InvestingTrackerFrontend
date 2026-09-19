@@ -31,4 +31,11 @@ describe('API error mapper', () => {
     expect(getApiErrorMessage(error, 'Fallback')).toBe('Fallback');
     expect(getApiErrorCode(error)).toBeUndefined();
   });
+
+  it('reports when the server cannot be reached', () => {
+    const error = new HttpErrorResponse({ status: 0, error: null });
+
+    expect(getApiErrorMessage(error, 'Invalid credentials'))
+      .toBe('We couldn’t complete your request right now. Please try again later.');
+  });
 });

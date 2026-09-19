@@ -8,9 +8,7 @@ import { ButtonComponent } from '../../../shared/components/button/button.compon
 import { AuthHttpService } from '../../../core/services/auth-http.service';
 import { AuthStoreService } from '../../../core/services/auth-store.service';
 import { RegistrationStateService } from '../../../core/services/registration-state.service';
-import { getApiErrorMessage } from '../../../core/errors/api-error.mapper';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { NotificationService } from '../../../core/services/notification.service';
 import { catchError, of, switchMap, take } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
@@ -35,7 +33,6 @@ export class LoginComponent {
   private readonly authStore = inject(AuthStoreService);
   private readonly registrationState = inject(RegistrationStateService);
   private readonly router = inject(Router);
-  private readonly notifications = inject(NotificationService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly isLoading = signal(false);
@@ -70,9 +67,8 @@ export class LoginComponent {
         switchMap((res) => res?.user
           ? of(res.user)
           : this.authStore.fetchUser().pipe(switchMap((currentUser) => of(currentUser.user)))),
-        catchError((err: unknown) => {
+        catchError(() => {
           this.isLoading.set(false);
-          this.notifications.error(getApiErrorMessage(err, 'Invalid credentials'));
           return of(null);
         }),
         take(1),
