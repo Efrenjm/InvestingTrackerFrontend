@@ -1,12 +1,18 @@
 <div class="flex flex-col gap-1.5 w-full">
   @if (label()) {
-    <label class="font-display text-sm font-semibold text-status-dark/70 ml-1">
+    <label
+      [attr.for]="resolvedId()"
+      class="font-display text-sm font-semibold text-status-dark/70 ml-1"
+    >
       {{ label() }}
+      @if (isRequired) {
+        <span class="text-red-500 ml-1" aria-label="required">*</span>
+      }
     </label>
   }
 
   <div
-    class="relative flex items-center transition-all duration-200"
+    class="relative flex items-center rounded-xl transition-all duration-200"
     [class.ring-2]="isFocused()"
     [class.ring-brand-primary/20]="isFocused() && !errorMessage"
     [class.ring-red-100]="errorMessage"
@@ -18,6 +24,7 @@
     }
 
     <input
+      [id]="resolvedId()"
       [formControl]="control()"
       [type]="type()"
       [placeholder]="placeholder()"

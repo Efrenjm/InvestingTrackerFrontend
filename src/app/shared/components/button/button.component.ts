@@ -18,12 +18,13 @@ export class ButtonComponent {
   readonly onClick = output<Event>();
 
   get buttonClasses() {
-    const base = 'px-6 py-3 rounded-full font-display font-semibold transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95';
+    const base = 'px-6 py-3 rounded-full font-display font-semibold transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed';
+    const interactive = !this.disabled() && !this.loading();
     const variants = {
-      primary: 'bg-brand-primary hover:opacity-90 text-white',
-      secondary: 'bg-brand-secondary hover:opacity-90 text-white',
-      outline: 'border-2 border-brand-primary text-brand-primary hover:bg-brand-primary/10 shadow-none'
+      primary: `bg-brand-primary text-white ${interactive ? 'hover:opacity-90' : ''}`,
+      secondary: `bg-brand-secondary text-white ${interactive ? 'hover:opacity-90' : ''}`,
+      outline: `border-2 border-brand-primary text-brand-primary shadow-none ${interactive ? 'hover:bg-brand-primary/10' : ''}`
     };
-    return `${base} ${variants[this.variant()]}`;
+    return `${base} ${variants[this.variant()]} ${interactive ? 'active:scale-95' : ''}`;
   }
 }

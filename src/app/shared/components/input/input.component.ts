@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component, input, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormControl } from '@angular/forms';
+import { ReactiveFormsModule, FormControl, Validators } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 
 @Component({
@@ -14,17 +14,34 @@ export class InputComponent {
   readonly label = input('');
   readonly type = input('text');
   readonly placeholder = input('');
+  readonly id = input<string | undefined>(undefined);
   readonly icon = input<string | undefined>(undefined);
   readonly control = input<FormControl>(new FormControl());
+  readonly showErrors = input(true);
+  readonly blurred = output<void>();
+
+  readonly resolvedId = computed(() => {
+    const label = this.label().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    return this.id() ?? `app-input-${label || 'field'}`;
+  });
 
   readonly isFocused = signal(false);
 
+  get isRequired(): boolean {
+    return this.control().hasValidator(Validators.required);
+  }
+
   get errorMessage(): string {
+    if (!this.showErrors()) return '';
+
     const ctrl = this.control();
-    if (ctrl.invalid && (ctrl.dirty || ctrl.touched)) {
+    if (ctrl.invalid && ctrl.touched) {
       if (ctrl.hasError('required')) return 'This field is required';
       if (ctrl.hasError('email')) return 'Invalid email address';
-      if (ctrl.hasError('minlength')) return `Minimum ${ctrl.errors?.['minlength'].requiredLength} characters`;
+      const minlengthError = ctrl.errors?.['minlength'] as { requiredLength?: unknown } | undefined;
+      if (ctrl.hasError('minlength') && typeof minlengthError?.requiredLength === 'number') {
+        return `Minimum ${minlengthError.requiredLength} characters`;
+      }
       if (ctrl.hasError('pattern')) {
         if (this.type() === 'password') {
           return 'Must contain uppercase, lowercase, number and special char (@#$%^&+=!?)';
@@ -42,5 +59,6 @@ export class InputComponent {
   onBlur() {
     this.isFocused.set(false);
     this.control().markAsTouched();
+    this.blurred.emit();
   }
 }

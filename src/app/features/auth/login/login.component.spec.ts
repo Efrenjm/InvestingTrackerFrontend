@@ -62,6 +62,15 @@ describe('LoginComponent', () => {
     expect(component.loginForm.valid).toBe(true);
   });
 
+  it('should accept any non-empty password length', () => {
+    component.loginForm.setValue({
+      email: 'test@example.com',
+      password: 'x',
+    });
+
+    expect(component.passwordControl.valid).toBe(true);
+  });
+
   it('should call authHttp.login on submit', () => {
     component.loginForm.setValue({
       email: 'test@example.com',

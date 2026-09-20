@@ -35,4 +35,20 @@ describe('ButtonComponent', () => {
     const button = fixture.nativeElement.querySelector('button');
     expect(button.disabled).toBe(true);
   });
+
+  it('should not apply interactive click styles when disabled', () => {
+    fixture.componentRef.setInput('disabled', true);
+    fixture.detectChanges();
+
+    const button = fixture.nativeElement.querySelector('button');
+    expect(button.className).not.toContain('active:scale-95');
+    expect(button.className).not.toContain('hover:');
+  });
+
+  it('should make the button host fill its available width', () => {
+    const hostStyles = getComputedStyle(fixture.nativeElement as HTMLElement);
+
+    expect(hostStyles.display).toBe('block');
+    expect(hostStyles.width).toBe('100%');
+  });
 });
