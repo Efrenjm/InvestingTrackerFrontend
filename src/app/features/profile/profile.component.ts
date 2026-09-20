@@ -9,12 +9,13 @@ import { ButtonComponent } from '../../shared/components/button/button.component
 import { AvatarComponent } from '../../shared/components/avatar/avatar.component';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { NotificationService } from '../../core/services/notification.service';
+import { PasswordFieldsComponent } from '../../shared/components/password-fields/password-fields.component';
 
 type ProfileSection = 'general' | 'security';
 
 @Component({
   selector: 'app-profile',
-  imports: [ReactiveFormsModule, InputComponent, ButtonComponent, AvatarComponent, MatSnackBarModule],
+  imports: [ReactiveFormsModule, InputComponent, ButtonComponent, AvatarComponent, PasswordFieldsComponent, MatSnackBarModule],
   template: `
     <div class="max-w-4xl mx-auto space-y-8 pb-12">
       <header>
@@ -133,20 +134,14 @@ type ProfileSection = 'general' | 'security';
                 controlName="oldPassword"
                 placeholder="••••••••"
               ></app-input>
-              <app-input
-                label="New Password"
-                type="password"
-                [formGroup]="passwordForm"
-                controlName="newPassword"
-                placeholder="••••••••"
-              ></app-input>
-              <app-input
-                label="Confirm New Password"
-                type="password"
-                [formGroup]="passwordForm"
-                controlName="confirmPassword"
-                placeholder="••••••••"
-              ></app-input>
+              <app-password-fields
+                [passwordControl]="passwordForm.controls.newPassword"
+                [confirmPasswordControl]="passwordForm.controls.confirmPassword"
+                passwordLabel="New Password"
+                confirmPasswordLabel="Confirm New Password"
+                passwordPlaceholder="••••••••"
+                confirmPasswordPlaceholder="••••••••"
+              ></app-password-fields>
 
               <div class="flex justify-end pt-4">
                 <app-button type="submit" [disabled]="passwordForm.invalid || loading()">
@@ -208,18 +203,22 @@ export class ProfileComponent {
   });
 
   profileForm = this.fb.group({
-    username: ['', (control: AbstractControl) => Validators.required(control)],
-    firstName: ['', (control: AbstractControl) => Validators.required(control)],
+    username: ['', Validators.required],
+    firstName: ['', Validators.required],
     middleName: [''],
-    lastName: ['', (control: AbstractControl) => Validators.required(control)],
+    lastName: ['', Validators.required],
     profilePicture: [''],
   });
 
   passwordForm = this.fb.group(
     {
-      oldPassword: ['', (control: AbstractControl) => Validators.required(control)],
-      newPassword: ['', [(control: AbstractControl) => Validators.required(control), Validators.minLength(8)]],
-      confirmPassword: ['', (control: AbstractControl) => Validators.required(control)],
+      oldPassword: ['', Validators.required],
+      newPassword: ['', [
+        Validators.required,
+        Validators.minLength(8),
+        Validators.pattern('^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!?])(?=\\S+$).{8,}$'),
+      ]],
+      confirmPassword: ['', Validators.required],
     },
     { validators: this.passwordMatchValidator },
   );

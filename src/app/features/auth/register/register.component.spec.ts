@@ -84,6 +84,13 @@ describe('RegisterComponent', () => {
     expect(authHttpSpy.register).not.toHaveBeenCalled();
   });
 
+  it('should render password requirements below the password input', () => {
+    component.registerForm.controls.password.setValue('Password1');
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('app-password-fields')).not.toBeNull();
+  });
+
   it('should call AuthHttpService.register, store data, and navigate on success', () => {
     const email = 'test@example.com';
     const password = 'Password1@';

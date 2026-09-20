@@ -13,6 +13,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { getApiErrorMessage } from '../../../core/errors/api-error.mapper';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { PasswordFieldsComponent } from '../../../shared/components/password-fields/password-fields.component';
 
 @Component({
   selector: 'app-register',
@@ -25,7 +26,8 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
     ButtonComponent,
     MatSnackBarModule,
     MatIconModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    PasswordFieldsComponent
   ],
   templateUrl: './register.component.html',
   styleUrl: './register.component.scss',

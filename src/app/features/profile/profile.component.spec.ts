@@ -8,6 +8,21 @@ import { AuthHttpService } from '../../core/services/auth-http.service';
 import type { User } from '../../core/models/auth.models';
 
 describe('ProfileComponent request lifecycle', () => {
+  it('requires the same password complexity rules shown to the user', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: AuthStoreService, useValue: { user: signal(null), updateUser: vi.fn() } },
+        { provide: UserService, useValue: { updateProfile: vi.fn() } },
+        { provide: AuthHttpService, useValue: { updatePassword: vi.fn() } },
+      ],
+    });
+    const fixture = TestBed.createComponent(ProfileComponent);
+
+    fixture.componentInstance.passwordForm.controls.newPassword.setValue('Password1');
+
+    expect(fixture.componentInstance.passwordForm.controls.newPassword.valid).toBe(false);
+  });
+
   it('cancels pending profile and password updates when destroyed', () => {
     const profileResponse = new Subject<User>();
     const passwordResponse = new Subject<void>();
@@ -23,11 +38,11 @@ describe('ProfileComponent request lifecycle', () => {
     const fixture = TestBed.createComponent(ProfileComponent);
     const component = fixture.componentInstance;
     component.profileForm.setValue({ username: 'sample', firstName: 'Sample', middleName: '', lastName: 'User', profilePicture: '' });
-    component.passwordForm.setValue({ oldPassword: 'synthetic-old', newPassword: 'synthetic-new', confirmPassword: 'synthetic-new' });
+    component.passwordForm.setValue({ oldPassword: 'synthetic-old', newPassword: 'Password1!', confirmPassword: 'Password1!' });
     component.updateProfile();
     component.updatePassword();
     expect(updateProfile).toHaveBeenCalledWith(component.profileForm.getRawValue());
-    expect(updatePassword).toHaveBeenCalledWith({ oldPassword: 'synthetic-old', newPassword: 'synthetic-new' });
+    expect(updatePassword).toHaveBeenCalledWith({ oldPassword: 'synthetic-old', newPassword: 'Password1!' });
     expect(profileResponse.observed).toBe(true);
     expect(passwordResponse.observed).toBe(true);
     fixture.destroy();

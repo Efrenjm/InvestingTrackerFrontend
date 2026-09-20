@@ -1,9 +1,8 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthLayoutComponent } from '../../../shared/layouts/auth-layout/auth-layout.component';
-import { InputComponent } from '../../../shared/components/input/input.component';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { AuthHttpService } from '../../../core/services/auth-http.service';
 import { AuthStoreService } from '../../../core/services/auth-store.service';
@@ -12,6 +11,7 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { NotificationService } from '../../../core/services/notification.service';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { PasswordFieldsComponent } from '../../../shared/components/password-fields/password-fields.component';
 import { getApiErrorMessage } from '../../../core/errors/api-error.mapper';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { EMPTY, catchError, switchMap, tap } from 'rxjs';
@@ -22,11 +22,11 @@ import { EMPTY, catchError, switchMap, tap } from 'rxjs';
     CommonModule,
     ReactiveFormsModule,
     AuthLayoutComponent,
-    InputComponent,
     ButtonComponent,
     MatSnackBarModule,
     MatIconModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    PasswordFieldsComponent
   ],
   templateUrl: './set-password.component.html',
   styleUrl: './set-password.component.scss',
@@ -42,8 +42,6 @@ export class SetPasswordComponent {
   private readonly destroyRef = inject(DestroyRef);
 
   readonly isLoading = signal(false);
-  readonly showPassword = signal(false);
-  readonly passwordValue = signal('');
 
   readonly passwordForm = this.fb.group({
     newPassword: ['', [
@@ -54,51 +52,11 @@ export class SetPasswordComponent {
     confirmPassword: ['', [Validators.required]]
   });
 
-  constructor() {
-    this.passwordForm.controls.newPassword.valueChanges
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(v => {
-        this.passwordValue.set(v || '');
-      });
-  }
-
   get newPasswordControl() { return this.passwordForm.controls.newPassword; }
   get confirmPasswordControl() { return this.passwordForm.controls.confirmPassword; }
 
-  readonly passwordStrength = computed(() => {
-    const password = this.passwordValue();
-    if (!password) return { score: 0, label: '', color: '' };
-
-    let score = 0;
-    if (password.length >= 8) score++;
-    if (password.length >= 12) score++;
-    if (/[a-z]/.test(password)) score++;
-    if (/[A-Z]/.test(password)) score++;
-    if (/\d/.test(password)) score++;
-    if (/[@#$%^&+=!?]/.test(password)) score++;
-
-    if (score <= 2) return { score, label: 'Weak', color: 'bg-red-400' };
-    if (score <= 4) return { score, label: 'Medium', color: 'bg-amber-400' };
-    return { score, label: 'Strong', color: 'bg-emerald-400' };
-  });
-
-  readonly passwordChecks = computed(() => {
-    const password = this.passwordValue();
-    return [
-      { label: 'At least 8 characters', met: password.length >= 8 },
-      { label: 'Uppercase letter', met: /[A-Z]/.test(password) },
-      { label: 'Lowercase letter', met: /[a-z]/.test(password) },
-      { label: 'Number', met: /\d/.test(password) },
-      { label: 'Special character (@#$%^&+=!?)', met: /[@#$%^&+=!?]/.test(password) },
-    ];
-  });
-
   get passwordsMatch(): boolean {
     return this.passwordForm.controls.newPassword.value === this.passwordForm.controls.confirmPassword.value;
-  }
-
-  togglePassword() {
-    this.showPassword.update(v => !v);
   }
 
   onSubmit() {

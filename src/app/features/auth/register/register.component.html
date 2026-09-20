@@ -12,21 +12,12 @@
       [control]="emailControl"
     ></app-input>
 
-    <app-input
-      label="Password"
-      type="password"
-      placeholder="Create a strong password"
-      icon="lock"
-      [control]="passwordControl"
-    ></app-input>
-
-    <app-input
-      label="Confirm Password"
-      type="password"
-      placeholder="Repeat your password"
-      icon="lock"
-      [control]="confirmPasswordControl"
-    ></app-input>
+    <app-password-fields
+      [passwordControl]="passwordControl"
+      [confirmPasswordControl]="confirmPasswordControl"
+      passwordPlaceholder="Create a strong password"
+      confirmPasswordPlaceholder="Repeat your password"
+    ></app-password-fields>
 
     <!-- Submit Button -->
     <div class="pt-2">
